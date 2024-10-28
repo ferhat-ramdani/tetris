@@ -71,24 +71,6 @@ def can_move(grid, piece, position, direction):
   
   return not collision
 
-# def move_piece(grid, piece, position, direction):
-#   if can_move(grid, piece, position, direction):
-#     remove_piece(grid, piece, position)
-#     if direction == 'l':
-#       new_position = (position[0], position[1] - 1)
-#     elif direction == 'r':
-#       new_position = (position[0], position[1] + 1)
-#     elif direction == 'u':
-#       new_position = (position[0] - 1, position[1])
-#     elif direction == 'b':
-#       new_position = (position[0] + 1, position[1])
-#     elif direction == 'r':
-#       new_position = position
-#       piece = rotate_piece(piece)
-#     put_piece(grid, piece, new_position)
-#     return new_position, piece
-#   return position, piece
-
 def clear_filled_lines(grid):
   grid_width = len(grid[0])
   new_grid = [row for row in grid if row.count('x') != grid_width]

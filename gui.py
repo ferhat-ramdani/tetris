@@ -44,7 +44,7 @@ def handle_key_events(window, position, random_piece, grid, cols, rows):
       put_piece(grid, random_piece, tuple(position))
     elif key == curses.KEY_DOWN:
       break
-    # grid = clear_filled_lines(grid)
+    grid = clear_filled_lines(grid)[0]
     window.clear()
     draw_grid(window, grid)
     draw_borders(window, cols, rows)
