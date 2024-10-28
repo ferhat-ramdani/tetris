@@ -19,7 +19,10 @@ def game_loop():
 	while(True):
 		position = list(start_pos)
 		random_piece = random.choice(pieces)
-		can_move_piece = True
+		can_move_piece = can_move_piece = can_move(grid, random_piece, tuple(position), 'b')
+
+		if(not can_move_piece):
+			break
 
 		while can_move_piece:
 			put_piece(grid, random_piece, tuple(position))
