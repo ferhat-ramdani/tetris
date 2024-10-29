@@ -15,22 +15,22 @@ window: curses.window = curses.initscr()
 
 def game_loop():
 	pieces = read_pieces('pieces')
-	grid = [[' ' for _ in range(COLS)] for _ in range(ROWS)]
+	grid = Grid(ROWS, COLS)
 	current_piece = random.choice(pieces)
 
 	while(True):
 		position = list(start_pos)
 		next_piece = random.choice(pieces)
-		update_window(window, grid, next_piece, MARGIN)
-		can_move_piece = can_move_piece = can_move(grid, current_piece, tuple(position), 'b')
+		update_window(window, grid.matrix, next_piece, MARGIN)
+		can_move_piece = can_move_piece = grid.can_move(current_piece, tuple(position), 'b')
 
 		if(not can_move_piece):
 			break
 
 		while can_move_piece:
-			put_piece(grid, current_piece, tuple(position))
-			grid, cleared_lines = clear_filled_lines(grid)
-			update_window(window, grid, next_piece, MARGIN)
+			grid.put_piece(current_piece, tuple(position))
+			grid.matrix, cleared_lines = grid.clear_filled_lines()
+			update_window(window, grid.matrix, next_piece, MARGIN)
 			window.refresh()
 
 			if cleared_lines > 0:
@@ -39,9 +39,9 @@ def game_loop():
 
 			current_piece = handle_key_events(window, position, current_piece, next_piece, grid, MARGIN)
 			
-			can_move_piece = can_move(grid, current_piece, tuple(position), 'b')
+			can_move_piece = grid.can_move(current_piece, tuple(position), 'b')
 			if can_move_piece:
-				remove_piece(grid, current_piece, tuple(position))
+				grid.remove_piece(current_piece, tuple(position))
 				position[0] += 1
 				window.clear()
 
