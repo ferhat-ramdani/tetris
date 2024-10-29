@@ -45,11 +45,11 @@ def game_loop():
 				position[0] += 1
 				window.clear()
 
-		clear_piece(window, next_piece, 10, ROWS // 2)
+		clear_piece(window, next_piece, (10, ROWS // 2))
 		current_piece = next_piece
 
 
-def main(window):
+def main(window: curses.window):
 	curses.curs_set(0)
 	curses.noecho()
 	curses.cbreak()

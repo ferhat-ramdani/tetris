@@ -4,24 +4,24 @@ import time
 
 from grid import *
 
-def draw_piece(window, piece, start_y, start_x):
+def draw_piece(window: curses.window, piece: List[List[str]], start_pos: tuple[int, int]):
   for y, row in enumerate(piece):
     for x, char in enumerate(row):
       if char == 'x':
-        window.addch(start_y + y, start_x + x, char)
+        window.addch(start_pos[1] + y, start_pos[0] + x, char)
 
-def clear_piece(window, piece, start_y, start_x):
+def clear_piece(window: curses.window, piece: List[List[str]], pos: tuple[int, int]):
   for y, row in enumerate(piece):
     for x, char in enumerate(row):
       if char == 'x':
-        window.addch(start_y + y, start_x + x, ' ')
+        window.addch(pos[1] + y, pos[0] + x, ' ')
 
 def draw_grid(window, matrix, margin):
   for y, row in enumerate(matrix):
     for x, char in enumerate(row):
       window.addch(y + 1, x + margin + 1, char)
 
-def draw_borders(window, cols, rows, margin) :
+def draw_borders(window: curses.window, cols: int, rows: int, margin: int) :
   for x in range(cols + 2):
     window.addch(0, x + margin, '-')
     window.addch(rows + 1, x + margin, '-')
@@ -29,7 +29,7 @@ def draw_borders(window, cols, rows, margin) :
     window.addch(y, margin, '|')
     window.addch(y, cols + 1 + margin, '|')
 
-def handle_key_events(window, position, current_piece, next_piece, grid: Grid, margin):
+def handle_key_events(window: curses.window, position: int, current_piece: List[List[str]], next_piece: List[List[str]], grid: Grid, margin: int):
   start_time = time.time()
   while time.time() - start_time < 1:
     key = window.getch()
@@ -54,8 +54,9 @@ def handle_key_events(window, position, current_piece, next_piece, grid: Grid, m
     window.refresh()
   return current_piece
 
-def update_window(window, matrix, next_piece, margin):
+def update_window(window: curses.window, matrix: List[List[str]], next_piece: List[List[str]], margin: int):
   draw_grid(window, matrix, margin)
   draw_borders(window, len(matrix[0]), len(matrix), margin)
-  draw_piece(window, next_piece, len(matrix[0]) // 2 - 3, 7)
+  start_pos = (len(matrix[0]) // 2 - 3, 7)
+  draw_piece(window, next_piece, start_pos)
   window.refresh()
