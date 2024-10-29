@@ -5,7 +5,7 @@ from pieces import *
 from gui import *
 from grid import *
 
-COLS = 15
+COLS = 10
 ROWS = 10
 
 MARGIN = 20
@@ -36,6 +36,7 @@ def game_loop():
 
 			if cleared_lines > 0:
 				can_move_piece = False
+				gui.score += cleared_lines
 				continue
 
 			current_piece = gui.handle_key_events(position, current_piece, next_piece, grid)
