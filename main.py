@@ -8,54 +8,59 @@ from grid import *
 COLS = 15
 ROWS = 10
 
+MARGIN = 20
 start_pos = (0, COLS // 2 - 1)
 
-stdscr: curses.window = curses.initscr()
+window: curses.window = curses.initscr()
 
 def game_loop():
 	pieces = read_pieces('pieces')
 	grid = [[' ' for _ in range(COLS)] for _ in range(ROWS)]
+	current_piece = random.choice(pieces)
 
 	while(True):
 		position = list(start_pos)
-		random_piece = random.choice(pieces)
-		can_move_piece = can_move_piece = can_move(grid, random_piece, tuple(position), 'b')
+		next_piece = random.choice(pieces)
+		update_window(window, grid, next_piece, MARGIN)
+		can_move_piece = can_move_piece = can_move(grid, current_piece, tuple(position), 'b')
 
 		if(not can_move_piece):
 			break
 
 		while can_move_piece:
-			put_piece(grid, random_piece, tuple(position))
+			put_piece(grid, current_piece, tuple(position))
 			grid, cleared_lines = clear_filled_lines(grid)
-			draw_borders(stdscr, COLS, ROWS)
-			draw_grid(stdscr, grid)
-			stdscr.refresh()
+			update_window(window, grid, next_piece, MARGIN)
+			window.refresh()
 
 			if cleared_lines > 0:
 				can_move_piece = False
 				continue
 
-			random_piece = handle_key_events(stdscr, position, random_piece, grid, COLS, ROWS)
+			current_piece = handle_key_events(window, position, current_piece, next_piece, grid, MARGIN)
 			
-			can_move_piece = can_move(grid, random_piece, tuple(position), 'b')
+			can_move_piece = can_move(grid, current_piece, tuple(position), 'b')
 			if can_move_piece:
-				remove_piece(grid, random_piece, tuple(position))
+				remove_piece(grid, current_piece, tuple(position))
 				position[0] += 1
-				stdscr.clear()
+				window.clear()
+
+		clear_piece(window, next_piece, 10, ROWS // 2)
+		current_piece = next_piece
 
 
-def main(stdscr):
+def main(window):
 	curses.curs_set(0)
 	curses.noecho()
 	curses.cbreak()
-	stdscr.keypad(True)
-	stdscr.nodelay(True)
+	window.keypad(True)
+	window.nodelay(True)
 
 	game_loop()
 
 	curses.curs_set(1)
 	curses.echo()
 	curses.nocbreak()
-	stdscr.keypad(False)
+	window.keypad(False)
 
 curses.wrapper(main)

@@ -47,7 +47,7 @@ def can_move(grid, piece, position, direction):
     new_position = (x - 1, y)
   elif direction == 'b':
     new_position = (x + 1, y)
-  elif direction == 'r':
+  elif direction == 'rot':
     new_position = position
     new_piece = rotate_piece(piece)
   else:
