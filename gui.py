@@ -8,6 +8,7 @@ class GameWindow:
   def __init__(self, window: curses.window, margin: int):
     self.window = window
     self.margin = margin
+    self.score = 0
 
   def draw_piece(self, piece: List[List[str]], start_pos: Tuple[int, int]):
     for y, row in enumerate(piece):
@@ -64,4 +65,11 @@ class GameWindow:
     self.draw_borders(len(matrix[0]), len(matrix))
     start_pos = (len(matrix[0]) // 2 - 3, 7)
     self.draw_piece(next_piece, start_pos)
+    self.display_score((2, 1))
     self.window.refresh()
+
+  def display_score(self, position: Tuple[int, int]):
+    score_str = f'score : {self.score}'
+    x, y = position
+    for i, char in enumerate(score_str):
+      self.window.addch(x, y + i, char)
