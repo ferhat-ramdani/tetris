@@ -25,7 +25,8 @@ def game_loop(log_set: bool):
     """The main game loop that runs until the game is over."""
     pieces = read_pieces('pieces')
     grid = Grid(ROWS, COLS, log_set)
-    gui = GameWindow(window, MARGIN, log_set)
+    block_char = '█'
+    gui = GameWindow(window, MARGIN, log_set, block_char)
 
     current_piece = random.choice(pieces)
     if(log_set):
