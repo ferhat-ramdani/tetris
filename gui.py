@@ -12,18 +12,19 @@ logger = logging.getLogger(__name__)
 
 class GameWindow:
     """A class to represent the game window."""
-    def __init__(self, window: curses.window, margin: int, log_set: bool):
+    def __init__(self, window: curses.window, margin: int, log_set: bool, piece_char: str = 'x'):
         self.window = window
         self.margin = margin
         self.score = 0
         self.log_set = log_set
+        self.piece_char = piece_char
 
     def draw_piece(self, piece: List[List[str]], start_pos: Tuple[int, int]):
         """Draw a piece on the game window."""
         for y, row in enumerate(piece):
             for x, char in enumerate(row):
                 if char == 'x':
-                    self.window.addch(start_pos[1] + y, start_pos[0] + x, char)
+                    self.window.addch(start_pos[1] + y, start_pos[0] + x, self.piece_char)
 
     def clear_piece(self, piece: List[List[str]], pos: Tuple[int, int]):
         """Clear a piece from the game window."""
@@ -36,7 +37,7 @@ class GameWindow:
         """Draw the game grid on the game window."""
         for y, row in enumerate(matrix):
             for x, char in enumerate(row):
-                self.window.addch(y + 1, x + self.margin + 1, char)
+                self.window.addch(y + 1, x + self.margin + 1, self.piece_char if char == 'x' else ' ')
 
     def draw_borders(self, cols: int, rows: int):
         """Draw the borders of the game window."""
