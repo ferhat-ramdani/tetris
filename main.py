@@ -14,8 +14,8 @@ from utils import generate_seed
 logger = logging.getLogger(__name__)
 
 # to manage screen display
-COLS = 10
-ROWS = 10
+COLS = 15
+ROWS = 13
 MARGIN = 20
 START_POS = (0, COLS // 2 - 1)
 
@@ -25,8 +25,7 @@ def game_loop(log_set: bool):
     """The main game loop that runs until the game is over."""
     pieces = read_pieces('pieces')
     grid = Grid(ROWS, COLS, log_set)
-    block_char = '█'
-    gui = GameWindow(window, MARGIN, log_set, block_char)
+    gui = GameWindow(window, MARGIN, log_set)
 
     current_piece = random.choice(pieces)
     if(log_set):
