@@ -11,7 +11,7 @@ from pieces import rotate_piece
 logger = logging.getLogger(__name__)
 
 PIECE_CHAR = '█'
-BASE_WAIT_TIME = 100
+BASE_WAIT_TIME = 1000
 DECREMENT_FACTOR = 0.1
 
 class GameWindow:
@@ -59,11 +59,15 @@ class GameWindow:
             self.window.addch(y, self.margin, vertical_border)
             self.window.addch(y, cols * 2 + 1 + self.margin, vertical_border)
 
-    def handle_key_events(self, position: List[int], current_piece: List[List[str]], next_piece: List[List[str]], grid: Grid):
+    def handle_key_events(self,
+                        position: List[int],
+                        current_piece: List[List[str]],
+                        next_piece: List[List[str]],
+                        grid: Grid):
         """Handle key events for moving and rotating the current piece."""
         wait_time = self.compute_wait_time()
         start_time = time.time()
-        while time.time() - start_time < wait_time / 1000:
+        while time.time() - start_time < wait_time / 1000: # wait_time is in milliseconds
             key = self.window.getch()
             self.window.timeout(wait_time)
             if key == curses.KEY_LEFT and grid.can_move(current_piece, tuple(position), 'l'):
