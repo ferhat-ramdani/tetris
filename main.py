@@ -14,28 +14,27 @@ from utils import generate_seed
 logger = logging.getLogger(__name__)
 
 # to manage screen display
-COLS = 10
-ROWS = 10
+COLS = 15
+ROWS = 13
 MARGIN = 20
 START_POS = (0, COLS // 2 - 1)
 
 window: curses.window = curses.initscr()
 
-def game_loop(log_set: bool):
+def game_loop(log_set: bool, pieces_folder: str):
     """The main game loop that runs until the game is over."""
-    pieces = read_pieces('pieces')
+    pieces = read_pieces(pieces_folder)
     grid = Grid(ROWS, COLS, log_set)
-    block_char = '█'
-    gui = GameWindow(window, MARGIN, log_set, block_char)
+    gui = GameWindow(window, MARGIN, log_set)
 
     current_piece = random.choice(pieces)
-    if(log_set):
+    if log_set:
         logger.info("Generated piece %s", current_piece)
 
     while True:
         position = list(START_POS)
         next_piece = random.choice(pieces)
-        if(log_set):
+        if log_set:
             logger.info("Generated next piece %s", next_piece)
         gui.update_window(grid.matrix, next_piece)
         can_move_piece = grid.can_move(current_piece, tuple(position), 'b')
@@ -71,7 +70,7 @@ def game_loop(log_set: bool):
 
 def main(stdscr: curses.window):
     """The main function that initializes the game."""
-    
+
     arguments = Arguments()
     arguments.parse_arguments()
     if arguments.is_log_set:
@@ -94,7 +93,8 @@ def main(stdscr: curses.window):
     stdscr.keypad(True)
     stdscr.nodelay(True)
 
-    game_loop(arguments.is_log_set)
+    pieces_foler = arguments.pieces_folder if arguments.pieces_folder else 'pieces'
+    game_loop(arguments.is_log_set, pieces_foler)
 
     curses.curs_set(1)
     curses.echo()
