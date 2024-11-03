@@ -21,11 +21,11 @@ START_POS = (0, COLS // 2 - 1)
 
 window: curses.window = curses.initscr()
 
-def game_loop(log_set: bool, pieces_folder: str):
+def game_loop(log_set: bool, pieces_folder: str, speed: str):
     """The main game loop that runs until the game is over."""
     pieces = read_pieces(pieces_folder)
     grid = Grid(ROWS, COLS, log_set)
-    gui = GameWindow(window, MARGIN, log_set)
+    gui = GameWindow(window, MARGIN, log_set, speed)
 
     current_piece = random.choice(pieces)
     if log_set:
@@ -53,6 +53,8 @@ def game_loop(log_set: bool, pieces_folder: str):
             if cleared_lines > 0:
                 can_move_piece = False
                 gui.score += cleared_lines
+                gui.cleared_lines += cleared_lines
+                gui.speed_value += 1
                 if log_set:
                     logger.info("Score updated to %s", gui.score)
                 continue
@@ -94,7 +96,7 @@ def main(stdscr: curses.window):
     stdscr.nodelay(True)
 
     pieces_foler = arguments.pieces_folder if arguments.pieces_folder else 'pieces'
-    game_loop(arguments.is_log_set, pieces_foler)
+    game_loop(arguments.is_log_set, pieces_foler, arguments.speed)
 
     curses.curs_set(1)
     curses.echo()

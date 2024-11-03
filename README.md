@@ -11,3 +11,8 @@
 - Use `--log <file>` to specify a file where logs will be written.
 - Use `--seed <seed>`to specify a seed for the random number generator.
 - Use `--piece <pieces_folder>` or `-p <pieces_folder>` to specify a folder containing the pieces of the game.
+- Use `--speed <speed>` or `-s <speed>` to specify the speed of the game at the start.
+
+# Launch the game
+
+- Use `python3 tetris.py` to launch the game with default options.

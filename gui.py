@@ -12,15 +12,23 @@ logger = logging.getLogger(__name__)
 
 PIECE_CHAR = '█'
 BASE_WAIT_TIME = 1000
-DECREMENT_FACTOR = 0.1
+DECREMENT_FACTOR = 0.2
+
+SPEED_VALUES = {
+    "slow": 1,
+    "medium": 3,
+    "fast": 5
+}
 
 class GameWindow:
     """A class to represent the game window."""
-    def __init__(self, window: curses.window, margin: int, log_set: bool):
+    def __init__(self, window: curses.window, margin: int, log_set: bool, speed: str):
         self.window = window
         self.margin = margin
         self.score = 0
+        self.cleared_lines = 0
         self.log_set = log_set
+        self.speed_value = SPEED_VALUES[speed if speed else "medium"]
 
     def draw_piece(self, piece: List[List[str]], start_pos: Tuple[int, int]):
         """Draw a piece on the game window."""
@@ -104,7 +112,7 @@ class GameWindow:
         self.draw_borders(len(matrix[0]), len(matrix))
         start_pos = (len(matrix[0]) // 2 - 3, 7)
         self.draw_piece(next_piece, start_pos)
-        self.display_wait_time((1, 2))
+        self.display_speed((1, 2))
         self.display_score((2, 2))
         self.window.refresh()
 
@@ -117,11 +125,14 @@ class GameWindow:
 
     def compute_wait_time(self) -> int:
         """Compute the wait time based on the current score."""
-        return int (BASE_WAIT_TIME - self.score * DECREMENT_FACTOR * BASE_WAIT_TIME)
+        wait_time = int(BASE_WAIT_TIME - self.speed_value * DECREMENT_FACTOR * BASE_WAIT_TIME)
+        if wait_time <= 0:
+            wait_time = int(DECREMENT_FACTOR * BASE_WAIT_TIME)
+        return wait_time
 
-    def display_wait_time(self, position: Tuple[int, int]):
+    def display_speed(self, position: Tuple[int, int]):
         """Display the current speed on the game window."""
-        speed_str = f'wait time : {self.compute_wait_time()/1000}s'
+        speed_str = f'speed : {self.speed_value}x'
         x, y = position
         for i, char in enumerate(speed_str):
             self.window.addch(x, y + i, char)
