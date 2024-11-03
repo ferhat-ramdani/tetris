@@ -32,7 +32,7 @@ class Arguments:
 
         if args.piece:
             self.pieces_folder = args.piece
-        
+
         if args.speed:
             if args.speed not in ["slow", "medium", "fast"]:
                 raise ValueError("Speed must be one of 'slow', 'medium', 'fast'")
