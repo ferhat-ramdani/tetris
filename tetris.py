@@ -36,7 +36,6 @@ def game_loop(log_set: bool, pieces_folder: str, speed: str):
         next_piece = random.choice(pieces)
         if log_set:
             logger.info("Generated next piece %s", next_piece)
-        gui.update_window(grid.matrix, next_piece)
         can_move_piece = grid.can_move(current_piece, tuple(position), 'b')
 
         if not can_move_piece:
@@ -46,18 +45,7 @@ def game_loop(log_set: bool, pieces_folder: str, speed: str):
 
         while can_move_piece:
             grid.put_piece(current_piece, tuple(position))
-            grid.matrix, cleared_lines = grid.clear_filled_lines()
             gui.update_window(grid.matrix, next_piece)
-            window.refresh()
-
-            if cleared_lines > 0:
-                can_move_piece = False
-                gui.score += cleared_lines
-                gui.cleared_lines += cleared_lines
-                gui.speed_value += 1
-                if log_set:
-                    logger.info("Score updated to %s", gui.score)
-                continue
 
             current_piece = gui.handle_key_events(position, current_piece, next_piece, grid)
             can_move_piece = grid.can_move(current_piece, tuple(position), 'b')
@@ -66,9 +54,19 @@ def game_loop(log_set: bool, pieces_folder: str, speed: str):
                 position[0] += 1
                 window.clear()
 
+        grid.matrix, cleared_lines = grid.clear_filled_lines()
+
+        if cleared_lines > 0:
+            can_move_piece = False
+            gui.score += cleared_lines
+            gui.cleared_lines += cleared_lines
+            gui.speed_value += 1
+            if log_set:
+                logger.info("Score updated to %s", gui.score)
+            gui.update_window(grid.matrix, next_piece)
+
         gui.clear_piece(next_piece, (10, ROWS // 2))
         current_piece = next_piece
-
 
 def main(stdscr: curses.window):
     """The main function that initializes the game."""
