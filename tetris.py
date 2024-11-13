@@ -52,7 +52,6 @@ def game_loop(log_set: bool, pieces_folder: str, speed: str):
             if can_move_piece:
                 grid.remove_piece(current_piece, tuple(position))
                 position[0] += 1
-                window.clear()
 
         grid.matrix, cleared_lines = grid.clear_filled_lines()
 

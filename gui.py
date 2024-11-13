@@ -101,12 +101,11 @@ class GameWindow:
                     logger.info("Moving piece %s down to position %s", current_piece, position)
                 break
             self.update_window(grid.matrix, next_piece)
-            self.window.refresh()
         return current_piece
 
     def update_window(self, matrix: List[List[str]], next_piece: List[List[str]]):
         """Update the game window with the current state of the game."""
-        self.window.clear()
+        self.window.erase()
         self.draw_grid(matrix)
         self.draw_borders(len(matrix[0]), len(matrix))
         start_pos = (len(matrix[0]) // 2 - 3, 7)
