@@ -35,8 +35,10 @@ class GameWindow:
         for y, row in enumerate(piece):
             for x, char in enumerate(row):
                 if char == 'x':
-                    self.window.addch(start_pos[1] + y, start_pos[0] + x * 2, PIECE_CHAR, curses.color_pair(1))
-                    self.window.addch(start_pos[1] + y, start_pos[0] + x * 2 + 1, PIECE_CHAR, curses.color_pair(1))
+                    self.window.addch(start_pos[1] + y, start_pos[0] + x * 2,
+                                      PIECE_CHAR, curses.color_pair(1))
+                    self.window.addch(start_pos[1] + y, start_pos[0] + x * 2 + 1,
+                                      PIECE_CHAR, curses.color_pair(1))
 
     def clear_piece(self, piece: List[List[str]], pos: Tuple[int, int]):
         """Clear a piece from the game window."""
@@ -109,7 +111,7 @@ class GameWindow:
         self.window.erase()
         self.draw_grid(matrix)
         self.draw_borders(len(matrix[0]), len(matrix))
-        start_pos = (len(matrix[0]) // 2 - 3, 7)
+        start_pos = ((self.margin) // 2 - 2, len(matrix) // 2 - 1)
         self.draw_piece(next_piece, start_pos)
         self.display_speed((1, 2))
         self.display_score((2, 2))
