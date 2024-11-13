@@ -12,6 +12,8 @@
 - Use `--seed <seed>`to specify a seed for the random number generator.
 - Use `--piece <pieces_folder>` or `-p <pieces_folder>` to specify a folder containing the pieces of the game.
 - Use `--speed <speed>` or `-s <speed>` to specify the speed of the game at the start.
+- Use `--width <width>` or `-w <width>` to specify the width of the game.
+- Use `--height <height>` or `-h <height>` to specify the height of the game.
 
 # Launch the game
 
