@@ -73,7 +73,8 @@ class Grid:
         piece_width = len(new_piece[0])
         grid_height = len(self.matrix)
         grid_width = len(self.matrix[0])
-        if (new_x < 0 or new_x + piece_height - 1 >= grid_height or new_y < 0 or new_y + piece_width - 1 >= grid_width):
+        if (new_x < 0 or new_x + piece_height - 1 >= grid_height or new_y < 0 or
+            new_y + piece_width - 1 >= grid_width):
             self.put_piece(piece, position)
             return False
 
