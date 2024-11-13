@@ -12,6 +12,8 @@ class Arguments:
         self.log_path = None
         self.pieces_folder = None
         self.speed = None
+        self.width = None
+        self.height = None
 
     def parse_arguments(self):
         """Parse the command line arguments."""
@@ -20,6 +22,8 @@ class Arguments:
         parser.add_argument("--log", type=str , help="Path to the log file")
         parser.add_argument("--piece", "-p", type=str , help="Path to the pieces file")
         parser.add_argument("--speed", "-s", type=str , help="Speed of the game at the start")
+        parser.add_argument("--width", "-w", type=int , help="Width of the game grid")
+        parser.add_argument("--height", "-l", type=int , help="Height of the game grid")
 
         args = parser.parse_args()
         if args.seed:
@@ -37,3 +41,9 @@ class Arguments:
             if args.speed not in ["slow", "medium", "fast"]:
                 raise ValueError("Speed must be one of 'slow', 'medium', 'fast'")
             self.speed = args.speed
+
+        if args.width:
+            self.width = args.width
+        
+        if args.height:
+            self.height = args.height
