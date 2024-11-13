@@ -35,37 +35,38 @@ class GameWindow:
         for y, row in enumerate(piece):
             for x, char in enumerate(row):
                 if char == 'x':
-                    self.window.addch(start_pos[1] + y, start_pos[0] + x * 2, PIECE_CHAR)
-                    self.window.addch(start_pos[1] + y, start_pos[0] + x * 2 + 1, PIECE_CHAR)
+                    self.window.addch(start_pos[1] + y, start_pos[0] + x * 2, PIECE_CHAR, curses.color_pair(1))
+                    self.window.addch(start_pos[1] + y, start_pos[0] + x * 2 + 1, PIECE_CHAR, curses.color_pair(1))
 
     def clear_piece(self, piece: List[List[str]], pos: Tuple[int, int]):
         """Clear a piece from the game window."""
         for y, row in enumerate(piece):
             for x, char in enumerate(row):
                 if char == 'x':
-                    self.window.addch(pos[1] + y, pos[0] + x * 2, ' ')
-                    self.window.addch(pos[1] + y, pos[0] + x * 2 + 1, ' ')
+                    self.window.addch(pos[1] + y, pos[0] + x * 2, ' ', curses.color_pair(2))
+                    self.window.addch(pos[1] + y, pos[0] + x * 2 + 1, ' ', curses.color_pair(2))
 
     def draw_grid(self, matrix: List[List[str]]):
         """Draw the game grid on the game window."""
         for y, row in enumerate(matrix):
             for x, char in enumerate(row):
                 character = PIECE_CHAR if char == 'x' else ' '
-                self.window.addch(y + 1, x * 2 + self.margin + 1, character)
-                self.window.addch(y + 1, x * 2 + self.margin + 2, character)
+                color_pair = curses.color_pair(1 if character == PIECE_CHAR else 2)
+                self.window.addch(y + 1, x * 2 + self.margin + 1, character, color_pair)
+                self.window.addch(y + 1, x * 2 + self.margin + 2, character, color_pair)
 
     def draw_borders(self, cols: int, rows: int):
         """Draw the borders of the game window."""
         horizontal_border = '─'
         vertical_border = '│'
         for x in range(cols + 1):
-            self.window.addch(0, x * 2 + self.margin, horizontal_border)
-            self.window.addch(0, x * 2 + 1 + self.margin, horizontal_border)
-            self.window.addch(rows + 1, x * 2 + self.margin, horizontal_border)
-            self.window.addch(rows + 1, x * 2 + 1 + self.margin, horizontal_border)
+            self.window.addch(0, x * 2 + self.margin, horizontal_border, curses.color_pair(3))
+            self.window.addch(0, x * 2 + 1 + self.margin, horizontal_border, curses.color_pair(3))
+            self.window.addch(rows + 1, x * 2 + self.margin, horizontal_border, curses.color_pair(3))
+            self.window.addch(rows + 1, x * 2 + 1 + self.margin, horizontal_border, curses.color_pair(3))
         for y in range(rows + 2):
-            self.window.addch(y, self.margin, vertical_border)
-            self.window.addch(y, cols * 2 + 1 + self.margin, vertical_border)
+            self.window.addch(y, self.margin, vertical_border, curses.color_pair(3))
+            self.window.addch(y, cols * 2 + 1 + self.margin, vertical_border, curses.color_pair(3))
 
     def handle_key_events(self,
                         position: List[int],
