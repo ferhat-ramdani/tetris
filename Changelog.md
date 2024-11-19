@@ -24,3 +24,10 @@
 
 - Added options `seed`, `speed`, `pieces`, `heigh` and `width` to the game
 - fixed bugs related to screen refrshing, cleared lines and the dispaly of the next piece
+
+## 1.3.1
+
+- Changed structure of project by adding `src` folder
+- Now logs are put inside the `log` folder
+- Refactored `tetris` module
+- Updated `readme`.
