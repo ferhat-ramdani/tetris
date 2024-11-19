@@ -115,13 +115,20 @@ def initialize_game():
 
 def main(stdscr: curses.window):
     """The main function that initializes the game."""
+    try:
+        arguments, width, height = initialize_game()
+        setup_curses(stdscr)
 
-    arguments, width, height = initialize_game()
-    setup_curses(stdscr)
+        pieces_folder = arguments.pieces_folder if arguments.pieces_folder else DEFAULT_PIECES_FOLDER
+        game_loop(pieces_folder, arguments.speed, width, height)
 
-    pieces_foler = arguments.pieces_folder if arguments.pieces_folder else DEFAULT_PIECES_FOLDER
-    game_loop(pieces_foler, arguments.speed, width, height)
+    except KeyboardInterrupt:
+        logger.info("Game interrupted by user (Ctrl+C)")
 
-    teardown_curses(stdscr)
+    finally:
+        teardown_curses(stdscr)
+        print("Game was interrupted unexpectedly") # doesn't work
 
 curses.wrapper(main)
+
+# it seems that curses is not allowing print on console. try to print outside the wrapper.
