@@ -15,7 +15,7 @@
 - Use `--width <width>` or `-w <width>` to specify the width of the game.
 - Use `--height <height>` or `-h <height>` to specify the height of the game.
 
-> **Note:** When the user does not specify the log file, a default log file with the name `game.log` will be created.
+> **Note:** Logs are stored inside a `log` folder. When the user does not specify the log file, a default log file with the name `game.log` will be created.
 
 # Launch the game
 
