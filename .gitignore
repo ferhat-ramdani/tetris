@@ -6,3 +6,7 @@ __pycache__/
 *.log
 
 *.txt
+
+generated_pieces
+
+new_pieces
