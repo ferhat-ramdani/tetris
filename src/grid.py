@@ -9,11 +9,10 @@ logger = logging.getLogger(__name__)
 
 class Grid:
     """A class to represent the game grid."""
-    def __init__(self, height: int, width: int, log_set: bool):
+    def __init__(self, height: int, width: int):
         self.height = height
         self.width = width
         self.matrix = [[' ' for _ in range(width)] for _ in range(height)]
-        self.log_set = log_set
 
     def put_piece(self, piece: List[List[str]], position: tuple[int, int]):
         """Put a piece on the grid at the given position."""
@@ -91,8 +90,7 @@ class Grid:
         new_grid = [row for row in self.matrix if row.count('x') != grid_width]
         lines_cleared = len(self.matrix) - len(new_grid)
         new_grid = [[' ' for _ in range(grid_width)] for _ in range(lines_cleared)] + new_grid
-        if self.log_set and lines_cleared > 0:
-            logger.info("Cleared %d completed lines", lines_cleared)
+        logger.info("Cleared %d completed lines", lines_cleared)
         return new_grid, lines_cleared
 
     def __str__(self):

@@ -15,6 +15,10 @@
 - Use `--width <width>` or `-w <width>` to specify the width of the game.
 - Use `--height <height>` or `-h <height>` to specify the height of the game.
 
+> **Note:** Logs are stored inside a `log` folder. When the user does not specify the log file, a default log file with the name `game.log` will be created.
+
 # Launch the game
 
 - Use `python3 tetris.py` to launch the game with default options.
+
+> **Note:** This game is, for now, not supported in windows, since it uses the `curses` python library.
