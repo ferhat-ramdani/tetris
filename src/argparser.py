@@ -8,7 +8,6 @@ class Arguments:
     def __init__(self):
         self.is_seed_set = False
         self.seed = 0
-        self.is_log_set = False
         self.log_path = None
         self.pieces_folder = None
         self.speed = None
@@ -32,7 +31,6 @@ class Arguments:
 
         if args.log:
             self.log_path = args.log
-            self.is_log_set = True
 
         if args.piece:
             self.pieces_folder = args.piece

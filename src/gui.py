@@ -22,12 +22,11 @@ SPEED_VALUES = {
 
 class GameWindow:
     """A class to represent the game window."""
-    def __init__(self, window: curses.window, margin: int, log_set: bool, speed: str):
+    def __init__(self, window: curses.window, margin: int, speed: str):
         self.window = window
         self.margin = margin
         self.score = 0
         self.cleared_lines = 0
-        self.log_set = log_set
         self.speed_value = SPEED_VALUES[speed if speed else "medium"]
 
     def draw_piece(self, piece: List[List[str]], start_pos: Tuple[int, int]):
@@ -85,23 +84,19 @@ class GameWindow:
                 grid.remove_piece(current_piece, tuple(position))
                 position[1] -= 1
                 grid.put_piece(current_piece, tuple(position))
-                if self.log_set:
-                    logger.info("Moving piece %s left to position %s", current_piece, position)
+                logger.info("Moving piece %s left to position %s", current_piece, position)
             elif key == curses.KEY_RIGHT and grid.can_move(current_piece, tuple(position), 'r'):
                 grid.remove_piece(current_piece, tuple(position))
                 position[1] += 1
                 grid.put_piece(current_piece, tuple(position))
-                if self.log_set:
-                    logger.info("Moving piece %s right to position %s", current_piece, position)
+                logger.info("Moving piece %s right to position %s", current_piece, position)
             elif key == ord(' ') and grid.can_move(current_piece, tuple(position), 'rot'):
                 grid.remove_piece(current_piece, tuple(position))
                 current_piece = rotate_piece(current_piece)
                 grid.put_piece(current_piece, tuple(position))
-                if self.log_set:
-                    logger.info("Rotating piece into %s in position %s", current_piece, position)
+                logger.info("Rotating piece into %s in position %s", current_piece, position)
             elif key == curses.KEY_DOWN:
-                if self.log_set:
-                    logger.info("Moving piece %s down to position %s", current_piece, position)
+                logger.info("Moving piece %s down to position %s", current_piece, position)
                 break
             self.update_window(grid.matrix, next_piece)
         return current_piece

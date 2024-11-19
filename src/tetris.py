@@ -26,31 +26,27 @@ DEFAULT_LOG_FIL = os.path.join(CURRENT_PATH, '../log/game.log')
 
 window: curses.window = curses.initscr()
 
-def game_loop(log_set: bool,
-              pieces_folder: str,
+def game_loop(pieces_folder: str,
               speed: str,
               width: int,
               height: int
               ):
     """The main game loop that runs until the game is over."""
     pieces = read_pieces(pieces_folder)
-    grid = Grid(height, width, log_set)
-    gui = GameWindow(window, MARGIN, log_set, speed)
+    grid = Grid(height, width)
+    gui = GameWindow(window, MARGIN, speed)
 
     current_piece = random.choice(pieces)
-    if log_set:
-        logger.info("Generated piece %s", current_piece)
+    logger.info("Generated piece %s", current_piece)
 
     while True:
         position = list((0, width // 2 - 1))
         next_piece = random.choice(pieces)
-        if log_set:
-            logger.info("Generated next piece %s", next_piece)
+        logger.info("Generated next piece %s", next_piece)
         can_move_piece = grid.can_move(current_piece, tuple(position), 'b')
 
         if not can_move_piece:
-            if log_set:
-                logger.info("No more moves available, game over")
+            logger.info("No more moves available, game over")
             break
 
         while can_move_piece:
@@ -70,8 +66,7 @@ def game_loop(log_set: bool,
             gui.score += cleared_lines
             gui.cleared_lines += cleared_lines
             gui.speed_value += 1
-            if log_set:
-                logger.info("Score updated to %s", gui.score)
+            logger.info("Score updated to %s", gui.score)
             gui.update_window(grid.matrix, next_piece)
 
         gui.clear_piece(next_piece, (10, ROWS // 2))
@@ -103,7 +98,7 @@ def initialize_game():
     arguments.parse_arguments()
     if not os.path.exists(DEFAULT_LOG_DIR):
         os.makedirs(DEFAULT_LOG_DIR)
-    if arguments.is_log_set:
+    if arguments.log_path:
         log_path = os.path.join(DEFAULT_LOG_DIR, arguments.log_path)
         logging.basicConfig(filename=log_path, level=logging.INFO, filemode='w')
     else:
@@ -111,9 +106,8 @@ def initialize_game():
     logger.info("Starting the game")
     seed = generate_seed()
     random.seed(arguments.seed if arguments.is_seed_set else seed)
-    if arguments.is_log_set:
-        logger.info("Seed set by %s", 
-                    f"user is {arguments.seed}" if arguments.is_seed_set else f"system is {seed}")
+    logger.info("Seed set by %s",
+                f"user is {arguments.seed}" if arguments.is_seed_set else f"system is {seed}")
     width = arguments.width if arguments.width else COLS
     height = arguments.height if arguments.height else ROWS
 
@@ -126,7 +120,7 @@ def main(stdscr: curses.window):
     setup_curses(stdscr)
 
     pieces_foler = arguments.pieces_folder if arguments.pieces_folder else DEFAULT_PIECES_FOLDER
-    game_loop(True, pieces_foler, arguments.speed, width, height)
+    game_loop(pieces_foler, arguments.speed, width, height)
 
     teardown_curses(stdscr)
 
