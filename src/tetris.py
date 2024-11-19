@@ -4,6 +4,7 @@
 import curses
 import random
 import logging
+import os
 
 from argparser import Arguments
 from pieces import read_pieces
@@ -18,7 +19,10 @@ COLS = 10
 ROWS = 20
 MARGIN = 20
 
-PIECES_FOLDER = '../pieces'
+CURRENT_PATH = os.path.dirname(os.path.abspath(__file__))
+DEFAULT_PIECES_FOLDER = os.path.join(CURRENT_PATH, '../pieces')
+DEFAULT_LOG_DIR = os.path.join(CURRENT_PATH, '../log/')
+DEFAULT_LOG_FIL = os.path.join(CURRENT_PATH, '../log/game.log')
 
 window: curses.window = curses.initscr()
 
@@ -73,15 +77,37 @@ def game_loop(log_set: bool,
         gui.clear_piece(next_piece, (10, ROWS // 2))
         current_piece = next_piece
 
-def main(stdscr: curses.window):
-    """The main function that initializes the game."""
+def setup_curses(stdscr: curses.window):
+    """Setup the curses environment."""
+    curses.start_color()
+    curses.init_pair(1, curses.COLOR_BLUE, curses.COLOR_BLACK)
+    curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_BLACK)
+    curses.init_pair(3, curses.COLOR_YELLOW, curses.COLOR_BLACK)
+    stdscr.clear()
+    curses.curs_set(0)
+    curses.noecho()
+    curses.cbreak()
+    stdscr.keypad(True)
+    stdscr.nodelay(True)
 
+def teardown_curses(stdscr: curses.window):
+    """Teardown the curses environment."""
+    curses.curs_set(1)
+    curses.echo()
+    curses.nocbreak()
+    stdscr.keypad(False)
+
+def initialize_game():
+    """Initialize the game with the arguments provided by the user."""
     arguments = Arguments()
     arguments.parse_arguments()
+    if not os.path.exists(DEFAULT_LOG_DIR):
+        os.makedirs(DEFAULT_LOG_DIR)
     if arguments.is_log_set:
-        logging.basicConfig(filename=arguments.log_path, level=logging.INFO, filemode='w')
+        log_path = os.path.join(DEFAULT_LOG_DIR, arguments.log_path)
+        logging.basicConfig(filename=log_path, level=logging.INFO, filemode='w')
     else:
-        logging.basicConfig(filename='game.log', level=logging.INFO, filemode='w')
+        logging.basicConfig(filename=DEFAULT_LOG_FIL, level=logging.INFO, filemode='w')
     logger.info("Starting the game")
     if arguments.is_seed_set:
         random.seed(arguments.seed)
@@ -99,23 +125,17 @@ def main(stdscr: curses.window):
     if arguments.height:
         height = arguments.height
 
-    curses.start_color()
-    curses.init_pair(1, curses.COLOR_BLUE, curses.COLOR_BLACK)
-    curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_BLACK)
-    curses.init_pair(3, curses.COLOR_YELLOW, curses.COLOR_BLACK)
-    stdscr.clear()
-    curses.curs_set(0)
-    curses.noecho()
-    curses.cbreak()
-    stdscr.keypad(True)
-    stdscr.nodelay(True)
+    return arguments, width, height
 
-    pieces_foler = arguments.pieces_folder if arguments.pieces_folder else PIECES_FOLDER
-    game_loop(arguments.is_log_set, pieces_foler, arguments.speed, width, height)
+def main(stdscr: curses.window):
+    """The main function that initializes the game."""
 
-    curses.curs_set(1)
-    curses.echo()
-    curses.nocbreak()
-    stdscr.keypad(False)
+    arguments, width, height = initialize_game()
+    setup_curses(stdscr)
+
+    pieces_foler = arguments.pieces_folder if arguments.pieces_folder else DEFAULT_PIECES_FOLDER
+    game_loop(True, pieces_foler, arguments.speed, width, height)
+
+    teardown_curses(stdscr)
 
 curses.wrapper(main)
