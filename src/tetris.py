@@ -11,18 +11,9 @@ from pieces import read_pieces
 from gui import GameWindow
 from grid import Grid
 from utils import generate_seed
+from constants import COLS, ROWS, MARGIN, DEFAULT_PIECES_FOLDER, DEFAULT_LOG_DIR, DEFAULT_LOG_FIL
 
 logger = logging.getLogger(__name__)
-
-# to manage screen display
-COLS = 10
-ROWS = 20
-MARGIN = 20
-
-CURRENT_PATH = os.path.dirname(os.path.abspath(__file__))
-DEFAULT_PIECES_FOLDER = os.path.join(CURRENT_PATH, '../pieces')
-DEFAULT_LOG_DIR = os.path.join(CURRENT_PATH, '../log/')
-DEFAULT_LOG_FIL = os.path.join(CURRENT_PATH, '../log/game.log')
 
 def game_loop(pieces_folder: str,
               speed: str,

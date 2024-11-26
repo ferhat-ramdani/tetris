@@ -2,11 +2,17 @@
 """Module to parse the command line arguments."""
 
 import argparse
+import os
+from constants import MARGIN
+
+# Get terminal dimensions
+TERMIANL_SIZE = os.get_terminal_size()
+TERMIANL_WIDTH, TERMIANL_HEIGHT= TERMIANL_SIZE.columns, TERMIANL_SIZE.lines
 
 MIN_WIDTH = 5
-MAX_WIDTH = 200
+MAX_WIDTH = TERMIANL_WIDTH//2 - 2 - MARGIN
 MIN_HEIGHT = 10
-MAX_HEIGHT = 200
+MAX_HEIGHT = TERMIANL_HEIGHT - 2
 
 def check_width(value: int):
     """Check if the width is between {MIN_WIDTH} and {MAX_WIDTH}."""
