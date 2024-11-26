@@ -106,7 +106,7 @@ class GameWindow:
         self.window.erase()
         self.draw_grid(matrix)
         self.draw_borders(len(matrix[0]), len(matrix))
-        start_pos = ((self.margin) // 2 - len(matrix[0]) // 2, len(matrix) // 2 - 1) #(x, y)
+        start_pos = ((self.margin) // 2 - len(next_piece[0]) // 2, len(matrix) // 2 - 1) #(x, y)
         self.draw_piece(next_piece, start_pos)
         self.display_speed((1, 2))
         self.display_score((2, 2))

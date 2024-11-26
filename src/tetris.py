@@ -108,6 +108,7 @@ def initialize_game():
                 f"user is {arguments.seed}" if arguments.seed else f"system is {seed}")
     width = arguments.width if arguments.width else COLS
     height = arguments.height if arguments.height else ROWS
+    logger.info(f"game width: {width}, game height: {height}")
 
     return arguments, width, height
 
