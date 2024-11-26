@@ -90,6 +90,7 @@ def teardown_curses(stdscr: curses.window):
     curses.nocbreak()
     stdscr.keypad(False)
 
+
 def initialize_game():
     """Initialize the game with the arguments provided by the user."""
     arguments = Arguments()
@@ -120,6 +121,7 @@ def main(stdscr: curses.window, arguments, width: int, height: int):
         game_loop(pieces_folder, arguments.speed, width, height)
     finally:
         teardown_curses(stdscr)
+        print("trying here")
 
 try:
     arguments, width, height = initialize_game()

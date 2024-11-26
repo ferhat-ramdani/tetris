@@ -110,6 +110,7 @@ class GameWindow:
         self.draw_piece(next_piece, start_pos)
         self.display_speed((1, 2))
         self.display_score((2, 2))
+        self.display_instructions((1, self.margin + len(matrix[0]) * 2 + 2)) #(y, x)
         self.window.refresh()
 
     def display_score(self, position: Tuple[int, int]):
@@ -132,3 +133,16 @@ class GameWindow:
         x, y = position
         for i, char in enumerate(speed_str):
             self.window.addch(x, y + i, char)
+
+    def display_instructions(self, position: Tuple[int, int]):
+        """Display the game instructions on the game window."""
+        instructions = [
+            "[space] -> rotate",
+            "[→] -> move left",
+            "[←] -> move right",
+            "[↓] -> move down"
+        ]
+        x, y = position
+        for i, instruction in enumerate(instructions):
+            for j, char in enumerate(instruction):
+                self.window.addch(x + i, y + j, char)
