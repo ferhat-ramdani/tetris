@@ -24,8 +24,6 @@ DEFAULT_PIECES_FOLDER = os.path.join(CURRENT_PATH, '../pieces')
 DEFAULT_LOG_DIR = os.path.join(CURRENT_PATH, '../log/')
 DEFAULT_LOG_FIL = os.path.join(CURRENT_PATH, '../log/game.log')
 
-window: curses.window = curses.initscr()
-
 def game_loop(pieces_folder: str,
               speed: str,
               width: int,
@@ -105,30 +103,27 @@ def initialize_game():
         logging.basicConfig(filename=DEFAULT_LOG_FIL, level=logging.INFO, filemode='w')
     logger.info("Starting the game")
     seed = generate_seed()
-    random.seed(arguments.seed if arguments.is_seed_set else seed)
+    random.seed(arguments.seed if arguments.seed else seed)
     logger.info("Seed set by %s",
-                f"user is {arguments.seed}" if arguments.is_seed_set else f"system is {seed}")
+                f"user is {arguments.seed}" if arguments.seed else f"system is {seed}")
     width = arguments.width if arguments.width else COLS
     height = arguments.height if arguments.height else ROWS
 
     return arguments, width, height
 
-def main(stdscr: curses.window):
+def main(stdscr: curses.window, arguments, width: int, height: int):
     """The main function that initializes the game."""
     try:
-        arguments, width, height = initialize_game()
         setup_curses(stdscr)
-
         pieces_folder = arguments.pieces_folder if arguments.pieces_folder else DEFAULT_PIECES_FOLDER
         game_loop(pieces_folder, arguments.speed, width, height)
-
-    except KeyboardInterrupt:
-        logger.info("Game interrupted by user (Ctrl+C)")
-
     finally:
         teardown_curses(stdscr)
-        print("Game was interrupted unexpectedly") # doesn't work
 
-curses.wrapper(main)
-
-# it seems that curses is not allowing print on console. try to print outside the wrapper.
+try:
+    arguments, width, height = initialize_game()
+    window: curses.window = curses.initscr()
+    curses.wrapper(main, arguments, width, height)
+except KeyboardInterrupt:
+    logger.info("Game interrupted by user (Ctrl+C)")
+    print("Game interrupted by user (Ctrl+C)")
