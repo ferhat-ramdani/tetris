@@ -19,6 +19,6 @@
 
 # Launch the game
 
+- Go to `src` folder
 - Use `python3 tetris.py` to launch the game with default options.
-
 > **Note:** This game is, for now, not supported in windows, since it uses the `curses` python library.
