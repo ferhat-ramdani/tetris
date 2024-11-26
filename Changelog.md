@@ -31,3 +31,10 @@
 - Now logs are put inside the `log` folder
 - Refactored `tetris` module
 - Updated `readme`.
+
+## 1.5.0
+
+- Added checks on some of the options and a user friendly exception
+- Handled CTRL+C interruption
+- Resolved bug about position of the rendering of the next piece
+- Now options are correctly checks, and large dimensions of game play are supported
