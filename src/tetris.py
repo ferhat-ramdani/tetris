@@ -11,7 +11,7 @@ from pieces import read_pieces
 from gui import GameWindow
 from grid import Grid
 from utils import generate_seed
-from constants import COLS, ROWS, MARGIN, DEFAULT_PIECES_FOLDER, DEFAULT_LOG_DIR, DEFAULT_LOG_FIL
+from constants import COLS, ROWS, MARGIN, DEFAULT_PIECES_FOLDER, DEFAULT_LOG_DIR, DEFAULT_LOG_FIL, COLORS
 
 logger = logging.getLogger(__name__)
 
@@ -21,31 +21,31 @@ def game_loop(pieces_folder: str,
               height: int
               ):
     """The main game loop that runs until the game is over."""
-    pieces = read_pieces(pieces_folder)
+    colored_pieces = read_pieces(pieces_folder)
     grid = Grid(height, width)
     gui = GameWindow(window, MARGIN, speed)
 
-    current_piece = random.choice(pieces)
-    logger.info("Generated piece %s", current_piece)
+    current_colored_piece = random.choice(colored_pieces)
+    logger.info("Generated piece %s", current_colored_piece)
 
     while True:
         position = list((0, width // 2 - 1))
-        next_piece = random.choice(pieces)
-        logger.info("Generated next piece %s", next_piece)
-        can_move_piece = grid.can_move(current_piece, tuple(position), 'b')
+        next_colored_piece = random.choice(colored_pieces)
+        logger.info("Generated next piece %s", next_colored_piece)
+        can_move_piece = grid.can_move(current_colored_piece.piece, tuple(position), 'b')
 
         if not can_move_piece:
             logger.info("No more moves available, game over")
             break
 
         while can_move_piece:
-            grid.put_piece(current_piece, tuple(position))
-            gui.update_window(grid.matrix, next_piece)
+            grid.put_piece(current_colored_piece.piece, tuple(position))
+            gui.update_window(grid.matrix, next_colored_piece)
 
-            current_piece = gui.handle_key_events(position, current_piece, next_piece, grid)
-            can_move_piece = grid.can_move(current_piece, tuple(position), 'b')
+            current_colored_piece = gui.handle_key_events(position, current_colored_piece, next_colored_piece, grid)
+            can_move_piece = grid.can_move(current_colored_piece.piece, tuple(position), 'b')
             if can_move_piece:
-                grid.remove_piece(current_piece, tuple(position))
+                grid.remove_piece(current_colored_piece.piece, tuple(position))
                 position[0] += 1
 
         grid.matrix, cleared_lines = grid.clear_filled_lines()
@@ -56,17 +56,17 @@ def game_loop(pieces_folder: str,
             gui.cleared_lines += cleared_lines
             gui.speed_value += 1
             logger.info("Score updated to %s", gui.score)
-            gui.update_window(grid.matrix, next_piece)
+            gui.update_window(grid.matrix, next_colored_piece)
 
-        gui.clear_piece(next_piece, (10, ROWS // 2))
-        current_piece = next_piece
+        gui.clear_piece(next_colored_piece, (10, ROWS // 2)) # what does that do?
+        current_colored_piece = next_colored_piece
 
 def setup_curses(stdscr: curses.window):
     """Setup the curses environment."""
     curses.start_color()
-    curses.init_pair(1, curses.COLOR_BLUE, curses.COLOR_BLACK)
-    curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_BLACK)
-    curses.init_pair(3, curses.COLOR_YELLOW, curses.COLOR_BLACK)
+    for color_name, pair_number in COLORS.items():
+        curses.init_pair(pair_number, getattr(curses, f"COLOR_{color_name.upper()}"),
+                         curses.COLOR_BLACK)
     stdscr.clear()
     curses.curs_set(0)
     curses.noecho()
@@ -110,6 +110,8 @@ def main(stdscr: curses.window, arguments, width: int, height: int):
         setup_curses(stdscr)
         pieces_folder = arguments.pieces_folder if arguments.pieces_folder else DEFAULT_PIECES_FOLDER
         game_loop(pieces_folder, arguments.speed, width, height)
+    except Exception as e:
+        logger.error("An error occurred: %s", e)
     finally:
         teardown_curses(stdscr)
         print("trying here")

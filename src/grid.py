@@ -2,7 +2,6 @@
 """This module contains the Grid class, which represents the game grid."""
 
 import logging
-from typing import List
 from pieces import rotate_piece
 
 logger = logging.getLogger(__name__)
@@ -14,7 +13,7 @@ class Grid:
         self.width = width
         self.matrix = [[' ' for _ in range(width)] for _ in range(height)]
 
-    def put_piece(self, piece: List[List[str]], position: tuple[int, int]):
+    def put_piece(self, piece: list, position: tuple):
         """Put a piece on the grid at the given position."""
         x, y = position
         piece_height = len(piece)
@@ -25,7 +24,7 @@ class Grid:
                 if piece[i][j] == 'x':
                     self.matrix[x + i][y + j] = piece[i][j]
 
-    def remove_piece(self, piece: List[List[str]], position: tuple[int, int]):
+    def remove_piece(self, piece: list, position: tuple):
         """Remove a piece from the grid at the given position."""
         x, y = position
         piece_height = len(piece)
@@ -37,7 +36,7 @@ class Grid:
                     self.matrix[x + i][y + j] = ' '
 
 
-    def check_collision(self, piece: List[List[str]], position: tuple[int, int]):
+    def check_collision(self, piece: list, position: tuple):
         """Check if a piece collides with the grid at the given position."""
         x, y = position
         piece_height = len(piece)
@@ -49,7 +48,7 @@ class Grid:
                     return True
         return False
 
-    def can_move(self, piece: List[List[str]], position: tuple[int, int], direction: str):
+    def can_move(self, piece: list, position: tuple, direction: str):
         """Check if a piece can move in the given direction."""
         x, y = position
         self.remove_piece(piece, position)
