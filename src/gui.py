@@ -29,15 +29,15 @@ class GameWindow:
         self.cleared_lines = 0
         self.speed_value = SPEED_VALUES[speed if speed else "medium"]
 
-    def draw_piece(self, piece: List[List[str]], start_pos: Tuple[int, int]):
+    def draw_piece(self, piece: List[List[str]], start_pos: Tuple[int, int], color: int):
         """Draw a piece on the game window."""
         for y, row in enumerate(piece):
             for x, char in enumerate(row):
                 if char == 'x':
                     self.window.addch(start_pos[1] + y, start_pos[0] + x * 2,
-                                      PIECE_CHAR, curses.color_pair(1))
+                                      PIECE_CHAR, color)
                     self.window.addch(start_pos[1] + y, start_pos[0] + x * 2 + 1,
-                                      PIECE_CHAR, curses.color_pair(1))
+                                      PIECE_CHAR, color)
 
     def clear_piece(self, piece: List[List[str]], pos: Tuple[int, int]):
         """Clear a piece from the game window."""
@@ -107,7 +107,7 @@ class GameWindow:
         self.draw_grid(matrix)
         self.draw_borders(len(matrix[0]), len(matrix))
         start_pos = ((self.margin) // 2 - len(next_piece[0]) // 2, len(matrix) // 2 - 1) #(x, y)
-        self.draw_piece(next_piece, start_pos)
+        self.draw_piece(next_piece, start_pos, curses.color_pair(1))
         self.display_speed((1, 2))
         self.display_score((2, 2))
         self.display_instructions((1, self.margin + len(matrix[0]) * 2 + 2)) #(y, x)
