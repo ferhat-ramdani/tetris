@@ -38,3 +38,17 @@
 - Handled CTRL+C interruption
 - Resolved bug about position of the rendering of the next piece
 - Now options are correctly checks, and large dimensions of game play are supported
+
+###  1.5.1
+
+- added instructions on how to play on the screen
+
+### 1.5.2
+
+- now options for dimensions of the game take into account the dimensions of the console
+
+## 1.6.0
+
+- Now pieces are colored by default
+- Added option for disabling colored pieces
+- fixed bug about position of the next piece
