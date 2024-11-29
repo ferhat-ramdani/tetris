@@ -40,9 +40,9 @@ class GameWindow:
     def draw_grid(self, matrix: list):
         """Draw the game grid on the game window."""
         for y, row in enumerate(matrix):
-            for x, char in enumerate(row):
-                character = ' ' if char == ' ' else PIECE_CHAR
-                color_pair = curses.color_pair(COLORS["cyan"] if character == PIECE_CHAR else COLORS["black"])
+            for x, block in enumerate(row):
+                color_pair = curses.color_pair(block.color)
+                character = ' ' if block.char == ' ' else PIECE_CHAR
                 self.window.addch(y + 1, x * 2 + self.margin + 1, character, color_pair)
                 self.window.addch(y + 1, x * 2 + self.margin + 2, character, color_pair)
 
@@ -71,20 +71,20 @@ class GameWindow:
         while time.time() - start_time < wait_time / 1000: # wait_time is in milliseconds
             key = self.window.getch()
             self.window.timeout(wait_time)
-            if key == curses.KEY_LEFT and grid.can_move(current_piece.piece, tuple(position), 'l'):
+            if key == curses.KEY_LEFT and grid.can_move(current_piece, tuple(position), 'l'):
                 grid.remove_piece(current_piece.piece, tuple(position))
                 position[1] -= 1
-                grid.put_piece(current_piece.piece, tuple(position))
+                grid.put_piece(current_piece, tuple(position))
                 logger.info("Moving piece %s left to position %s", current_piece.piece, position)
-            elif key == curses.KEY_RIGHT and grid.can_move(current_piece.piece, tuple(position), 'r'):
+            elif key == curses.KEY_RIGHT and grid.can_move(current_piece, tuple(position), 'r'):
                 grid.remove_piece(current_piece.piece, tuple(position))
                 position[1] += 1
-                grid.put_piece(current_piece.piece, tuple(position))
+                grid.put_piece(current_piece, tuple(position))
                 logger.info("Moving piece %s right to position %s", current_piece.piece, position)
-            elif key == ord(' ') and grid.can_move(current_piece.piece, tuple(position), 'rot'):
+            elif key == ord(' ') and grid.can_move(current_piece, tuple(position), 'rot'):
                 grid.remove_piece(current_piece.piece, tuple(position))
                 current_piece.piece = rotate_piece(current_piece.piece)
-                grid.put_piece(current_piece.piece, tuple(position))
+                grid.put_piece(current_piece, tuple(position))
                 logger.info("Rotating piece into %s in position %s", current_piece.piece, position)
             elif key == curses.KEY_DOWN:
                 logger.info("Moving piece %s down to position %s", current_piece.piece, position)

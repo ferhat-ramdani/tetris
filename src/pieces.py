@@ -23,7 +23,7 @@ def read_pieces(pieces_folder) -> list:
         if os.path.isfile(path):
             with open(path, 'r', encoding='utf-8') as file:
                 piece = [list(line.rstrip('\n')) for line in file]
-                color_value = 2 + (index % 5)
+                color_value = 2 + (index % 7)
                 pieces.append(ColoredPiece(color_value, piece))
 
     return pieces

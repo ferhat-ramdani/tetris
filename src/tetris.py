@@ -1,4 +1,3 @@
-
 """The main module that runs the game."""
 
 import curses
@@ -32,18 +31,18 @@ def game_loop(pieces_folder: str,
         position = list((0, width // 2 - 1))
         next_colored_piece = random.choice(colored_pieces)
         logger.info("Generated next piece %s", next_colored_piece)
-        can_move_piece = grid.can_move(current_colored_piece.piece, tuple(position), 'b')
+        can_move_piece = grid.can_move(current_colored_piece, tuple(position), 'd')
 
         if not can_move_piece:
             logger.info("No more moves available, game over")
             break
 
         while can_move_piece:
-            grid.put_piece(current_colored_piece.piece, tuple(position))
+            grid.put_piece(current_colored_piece, tuple(position))
             gui.update_window(grid.matrix, next_colored_piece)
 
             current_colored_piece = gui.handle_key_events(position, current_colored_piece, next_colored_piece, grid)
-            can_move_piece = grid.can_move(current_colored_piece.piece, tuple(position), 'b')
+            can_move_piece = grid.can_move(current_colored_piece, tuple(position), 'd')
             if can_move_piece:
                 grid.remove_piece(current_colored_piece.piece, tuple(position))
                 position[0] += 1
@@ -90,7 +89,9 @@ def initialize_game():
         os.makedirs(DEFAULT_LOG_DIR)
     if arguments.log_path:
         log_path = os.path.join(DEFAULT_LOG_DIR, arguments.log_path)
-        logging.basicConfig(filename=log_path, level=logging.INFO, filemode='w')
+        logging.basicConfig(filename=log_path,
+                            level=logging.INFO,
+                            filemode='w')
     else:
         logging.basicConfig(filename=DEFAULT_LOG_FIL, level=logging.INFO, filemode='w')
     logger.info("Starting the game")
@@ -108,10 +109,12 @@ def main(stdscr: curses.window, arguments, width: int, height: int):
     """The main function that initializes the game."""
     try:
         setup_curses(stdscr)
-        pieces_folder = arguments.pieces_folder if arguments.pieces_folder else DEFAULT_PIECES_FOLDER
+        pieces_folder = arguments.pieces_folder if arguments.pieces_folder \
+            else DEFAULT_PIECES_FOLDER
         game_loop(pieces_folder, arguments.speed, width, height)
     except Exception as e:
         logger.error("An error occurred: %s", e)
+        raise e
     finally:
         teardown_curses(stdscr)
         print("trying here")
