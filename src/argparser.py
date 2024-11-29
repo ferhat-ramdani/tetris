@@ -25,41 +25,15 @@ def check_speed(value: str):
         raise argparse.ArgumentTypeError("Speed value must be 'slow', 'medium' or 'fast'")
     return value
 
-class Arguments:
-    """Class to parse the command line arguments."""
-    def __init__(self):
-        self.seed = None
-        self.log_path = None
-        self.pieces_folder = None
-        self.speed = None
-        self.width = None
-        self.height = None
+def parse_arguments():
+    """Parse the command line arguments."""
+    parser = argparse.ArgumentParser(description='Launch Termtris')
+    parser.add_argument("--seed", type=int, default=None, help="Seed for the random generator")
+    parser.add_argument("--log", type=str , help="Path to the log file")
+    parser.add_argument("--piece", "-p", type=str , help="Path to the pieces file")
+    parser.add_argument("--speed", "-s", type=check_speed , help="Speed of the game at the start")
+    parser.add_argument("--width", "-w", type=check_width , help="Width of the game grid")
+    parser.add_argument("--height", "-l", type=check_height , help="Height of the game grid")
+    parser.add_argument("--no-color", action='store_true', help="Disable colors in the game")
 
-    def parse_arguments(self):
-        """Parse the command line arguments."""
-        parser = argparse.ArgumentParser(description='Launch Termtris')
-        parser.add_argument("--seed", type=int, default=None, help="Seed for the random generator")
-        parser.add_argument("--log", type=str , help="Path to the log file")
-        parser.add_argument("--piece", "-p", type=str , help="Path to the pieces file")
-        parser.add_argument("--speed", "-s", type=check_speed , help="Speed of the game at the start")
-        parser.add_argument("--width", "-w", type=check_width , help="Width of the game grid")
-        parser.add_argument("--height", "-l", type=check_height , help="Height of the game grid")
-
-        args = parser.parse_args()
-        if args.seed:
-            self.seed = args.seed
-
-        if args.log:
-            self.log_path = args.log
-
-        if args.piece:
-            self.pieces_folder = args.piece
-
-        if args.speed:
-            self.speed = args.speed
-
-        if args.width:
-            self.width = args.width
-        
-        if args.height:
-            self.height = args.height
+    return parser.parse_args()

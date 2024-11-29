@@ -97,7 +97,10 @@ class GameWindow:
         self.window.erase()
         self.draw_grid(matrix)
         self.draw_borders(len(matrix[0]), len(matrix), curses.color_pair(COLORS['yellow']))
-        start_pos = ((self.margin) // 2 - len(next_piece.piece[0]) // 2, len(matrix) // 2 - 1) #(x, y)
+        x = (self.margin) // 2 - len(next_piece.piece[0])
+        y = len(matrix) // 2 - 1
+        logger.info("Drawing next piece %s in pos %s", next_piece.piece, (x, y))
+        start_pos = (x, y) #(x, y)
         self.draw_piece(next_piece, start_pos)
         self.display_speed((1, 2))
         self.display_score((2, 2))

@@ -5,7 +5,7 @@ import random
 import logging
 import os
 
-from argparser import Arguments
+from argparser import parse_arguments
 from pieces import read_pieces
 from gui import GameWindow
 from grid import Grid
@@ -17,13 +17,13 @@ logger = logging.getLogger(__name__)
 def game_loop(pieces_folder: str,
               speed: str,
               width: int,
-              height: int
+              height: int,
+              no_color: bool = False
               ):
     """The main game loop that runs until the game is over."""
-    colored_pieces = read_pieces(pieces_folder)
+    colored_pieces = read_pieces(pieces_folder, no_color)
     grid = Grid(height, width)
     gui = GameWindow(window, MARGIN, speed)
-
     current_colored_piece = random.choice(colored_pieces)
     logger.info("Generated piece %s", current_colored_piece)
 
@@ -83,13 +83,12 @@ def teardown_curses(stdscr: curses.window):
 
 def initialize_game():
     """Initialize the game with the arguments provided by the user."""
-    arguments = Arguments()
-    arguments.parse_arguments()
+    arguments = parse_arguments()
     if not os.path.exists(DEFAULT_LOG_DIR):
         os.makedirs(DEFAULT_LOG_DIR)
-    if arguments.log_path:
-        log_path = os.path.join(DEFAULT_LOG_DIR, arguments.log_path)
-        logging.basicConfig(filename=log_path,
+    if arguments.log:
+        log = os.path.join(DEFAULT_LOG_DIR, arguments.log)
+        logging.basicConfig(filename=log,
                             level=logging.INFO,
                             filemode='w')
     else:
@@ -101,7 +100,7 @@ def initialize_game():
                 f"user is {arguments.seed}" if arguments.seed else f"system is {seed}")
     width = arguments.width if arguments.width else COLS
     height = arguments.height if arguments.height else ROWS
-    logger.info(f"game width: {width}, game height: {height}")
+    logger.info("Game width: %d, game height: %d", width, height)
 
     return arguments, width, height
 
@@ -109,9 +108,9 @@ def main(stdscr: curses.window, arguments, width: int, height: int):
     """The main function that initializes the game."""
     try:
         setup_curses(stdscr)
-        pieces_folder = arguments.pieces_folder if arguments.pieces_folder \
+        pieces_folder = arguments.piece if arguments.piece \
             else DEFAULT_PIECES_FOLDER
-        game_loop(pieces_folder, arguments.speed, width, height)
+        game_loop(pieces_folder, arguments.speed, width, height, arguments.no_color)
     except Exception as e:
         logger.error("An error occurred: %s", e)
         raise e
@@ -120,9 +119,9 @@ def main(stdscr: curses.window, arguments, width: int, height: int):
         print("trying here")
 
 try:
-    arguments, width, height = initialize_game()
+    args, width, height = initialize_game()
     window: curses.window = curses.initscr()
-    curses.wrapper(main, arguments, width, height)
+    curses.wrapper(main, args, width, height)
 except KeyboardInterrupt:
     logger.info("Game interrupted by user (Ctrl+C)")
     print("Game interrupted by user (Ctrl+C)")

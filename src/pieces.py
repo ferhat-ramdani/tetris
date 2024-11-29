@@ -12,10 +12,10 @@ class ColoredPiece:
     color_value: int
     piece: list
 
-def read_pieces(pieces_folder) -> list:
+def read_pieces(pieces_folder: str, no_color: bool) -> list:
     """Read the pieces from the given folder, assign a color to each, 
     and return them as a list of tuples."""
-    
+
     pieces = []
 
     for index, piece_name in enumerate(os.listdir(pieces_folder)):
@@ -23,7 +23,7 @@ def read_pieces(pieces_folder) -> list:
         if os.path.isfile(path):
             with open(path, 'r', encoding='utf-8') as file:
                 piece = [list(line.rstrip('\n')) for line in file]
-                color_value = 2 + (index % 7)
+                color_value = 2 + (index % 7) if not no_color else COLORS["white"]
                 pieces.append(ColoredPiece(color_value, piece))
 
     return pieces
