@@ -24,7 +24,7 @@ PIECE_CHAR = '█'
 BASE_WAIT_TIME = 1000
 DECREMENT_FACTOR = 0.2
 
-SPEED_VALUES = {
+SPEEDS = {
     "slow": 1,
     "medium": 3,
     "fast": 5

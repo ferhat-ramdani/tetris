@@ -31,7 +31,7 @@ def parse_arguments():
     parser.add_argument("--seed", type=int, default=None, help="Seed for the random generator")
     parser.add_argument("--log", type=str , help="Path to the log file")
     parser.add_argument("--piece", "-p", type=str , help="Path to the pieces file")
-    parser.add_argument("--speed", "-s", type=check_speed , help="Speed of the game at the start")
+    parser.add_argument("--speed", "-s", type=check_speed , help="Speed of the game at the start, allowed values are 'slow', 'medium' and 'fast'")
     parser.add_argument("--width", "-w", type=check_width , help="Width of the game grid")
     parser.add_argument("--height", "-l", type=check_height , help="Height of the game grid")
     parser.add_argument("--no-color", action='store_true', help="Disable colors in the game")

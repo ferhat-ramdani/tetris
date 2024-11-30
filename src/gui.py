@@ -5,7 +5,7 @@ import curses
 import time
 from grid import Grid
 from pieces import rotate_piece
-from constants import PIECE_CHAR, SPEED_VALUES, BASE_WAIT_TIME, DECREMENT_FACTOR, COLORS
+from constants import PIECE_CHAR, SPEEDS, BASE_WAIT_TIME, DECREMENT_FACTOR, COLORS
 from pieces import ColoredPiece
 
 logger = logging.getLogger(__name__)
@@ -17,7 +17,7 @@ class GameWindow:
         self.margin = margin
         self.score = 0
         self.cleared_lines = 0
-        self.speed_value = SPEED_VALUES[speed if speed else "medium"]
+        self.speed = SPEEDS[speed if speed else "medium"]
 
     def draw_piece(self, colored_piece: ColoredPiece, start_pos: tuple):
         """Draw a piece on the game window."""
@@ -116,14 +116,14 @@ class GameWindow:
 
     def compute_wait_time(self) -> int:
         """Compute the wait time based on the current score."""
-        wait_time = int(BASE_WAIT_TIME - self.speed_value * DECREMENT_FACTOR * BASE_WAIT_TIME)
+        wait_time = int(BASE_WAIT_TIME - self.speed * DECREMENT_FACTOR * BASE_WAIT_TIME)
         if wait_time <= 0:
             wait_time = int(DECREMENT_FACTOR * BASE_WAIT_TIME)
         return wait_time
 
     def display_speed(self, position: tuple):
         """Display the current speed on the game window."""
-        speed_str = f'speed : {self.speed_value}x'
+        speed_str = f'speed : {self.speed}x'
         x, y = position
         for i, char in enumerate(speed_str):
             self.window.addch(x, y + i, char)
