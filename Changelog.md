@@ -52,3 +52,7 @@
 - Now pieces are colored by default
 - Added option for disabling colored pieces
 - fixed bug about position of the next piece
+
+## 1.6.1
+
+- now borders are thiker and are well aligned with proper corners
