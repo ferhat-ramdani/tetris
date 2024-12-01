@@ -53,12 +53,13 @@ def game_loop(pieces_folder: str,
             can_move_piece = False
             gui.score += cleared_lines
             gui.cleared_lines += cleared_lines
-            gui.speed_value += 1
+            gui.speed += 1
             logger.info("Score updated to %s", gui.score)
             gui.update_window(grid.matrix, next_colored_piece)
 
         gui.clear_piece(next_colored_piece, (10, ROWS // 2)) # what does that do?
         current_colored_piece = next_colored_piece
+    game_loop(pieces_folder, speed, width, height, no_color)
 
 def setup_curses(stdscr: curses.window):
     """Setup the curses environment."""

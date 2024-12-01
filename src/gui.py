@@ -5,7 +5,8 @@ import curses
 import time
 from grid import Grid
 from pieces import rotate_piece
-from constants import PIECE_CHAR, SPEED_VALUES, BASE_WAIT_TIME, DECREMENT_FACTOR, COLORS
+from constants import PIECE_CHAR, SPEEDS, BASE_WAIT_TIME, DECREMENT_FACTOR, \
+    COLORS, HORIZONTAL_BORDER, VERTICAL_BORDER, T_L_CORNER, T_R_CORNER, B_L_CORNER, B_R_CORNER
 from pieces import ColoredPiece
 
 logger = logging.getLogger(__name__)
@@ -17,7 +18,7 @@ class GameWindow:
         self.margin = margin
         self.score = 0
         self.cleared_lines = 0
-        self.speed_value = SPEED_VALUES[speed if speed else "medium"]
+        self.speed = SPEEDS[speed if speed else "medium"]
 
     def draw_piece(self, colored_piece: ColoredPiece, start_pos: tuple):
         """Draw a piece on the game window."""
@@ -45,20 +46,26 @@ class GameWindow:
                 character = ' ' if block.char == ' ' else PIECE_CHAR
                 self.window.addch(y + 1, x * 2 + self.margin + 1, character, color_pair)
                 self.window.addch(y + 1, x * 2 + self.margin + 2, character, color_pair)
-
+    
     def draw_borders(self, cols: int, rows: int, color):
-        """Draw the borders of the game window."""
-        horizontal_border = '─'
-        vertical_border = '│'
+        """Draw the borders of the game window, including the corners."""
         color_pair = color
-        for x in range(cols + 1):
-            self.window.addch(0, x * 2 + self.margin, horizontal_border, color_pair)
-            self.window.addch(0, x * 2 + 1 + self.margin, horizontal_border, color_pair)
-            self.window.addch(rows + 1, x * 2 + self.margin, horizontal_border, color_pair)
-            self.window.addch(rows + 1, x * 2 + 1 + self.margin, horizontal_border, color_pair)
+        for x in range(cols+1):
+            self.window.addch(0, x * 2 + self.margin, HORIZONTAL_BORDER, color_pair)
+            self.window.addch(0, x * 2 + self.margin + 1, HORIZONTAL_BORDER, color_pair)
+            self.window.addch(rows + 1, x * 2 + self.margin, HORIZONTAL_BORDER, color_pair)
+            self.window.addch(rows + 1, x * 2 + self.margin + 1, HORIZONTAL_BORDER, color_pair)
         for y in range(rows + 2):
-            self.window.addch(y, self.margin, vertical_border, color_pair)
-            self.window.addch(y, cols * 2 + 1 + self.margin, vertical_border, color_pair)
+            if y == 0:
+                self.window.addch(y, self.margin, T_L_CORNER, color_pair)
+                self.window.addch(y, cols * 2 + 1 + self.margin, T_R_CORNER, color_pair)
+            elif y == rows + 1:
+                self.window.addch(y, self.margin, B_L_CORNER, color_pair)
+                self.window.addch(y, cols * 2 + 1 + self.margin, B_R_CORNER, color_pair)
+            else:
+                self.window.addch(y, self.margin, VERTICAL_BORDER, color_pair)
+                self.window.addch(y, cols * 2 + 1 + self.margin, VERTICAL_BORDER, color_pair)
+
 
     def handle_key_events(self,
                         position: list,
@@ -89,7 +96,8 @@ class GameWindow:
             elif key == curses.KEY_DOWN:
                 logger.info("Moving piece %s down to position %s", current_piece.piece, position)
                 break
-            self.update_window(grid.matrix, next_piece)
+            if key:
+                self.update_window(grid.matrix, next_piece)
         return current_piece
 
     def update_window(self, matrix: list, next_piece: ColoredPiece):
@@ -116,14 +124,14 @@ class GameWindow:
 
     def compute_wait_time(self) -> int:
         """Compute the wait time based on the current score."""
-        wait_time = int(BASE_WAIT_TIME - self.speed_value * DECREMENT_FACTOR * BASE_WAIT_TIME)
+        wait_time = int(BASE_WAIT_TIME - self.speed * DECREMENT_FACTOR * BASE_WAIT_TIME)
         if wait_time <= 0:
             wait_time = int(DECREMENT_FACTOR * BASE_WAIT_TIME)
         return wait_time
 
     def display_speed(self, position: tuple):
         """Display the current speed on the game window."""
-        speed_str = f'speed : {self.speed_value}x'
+        speed_str = f'speed : {self.speed}x'
         x, y = position
         for i, char in enumerate(speed_str):
             self.window.addch(x, y + i, char)

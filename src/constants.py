@@ -21,10 +21,16 @@ MIN_HEIGHT = 10
 MAX_HEIGHT = TERMIANL_HEIGHT - 2
 
 PIECE_CHAR = '█'
+HORIZONTAL_BORDER = '─'
+VERTICAL_BORDER = '│'
+T_L_CORNER = '┌'
+T_R_CORNER = '┐'
+B_L_CORNER = '└'
+B_R_CORNER = '┘'
 BASE_WAIT_TIME = 1000
 DECREMENT_FACTOR = 0.2
 
-SPEED_VALUES = {
+SPEEDS = {
     "slow": 1,
     "medium": 3,
     "fast": 5
