@@ -11,8 +11,8 @@ WORKDIR /app
 
 COPY . /app
 
-EXPOSE 7860
+EXPOSE 10000
 
 ENV TERM=xterm-256color
 
-CMD ["ttyd", "-p", "7860", "-W", "-p", "7860", "-i", "0.0.0.0", "-o", "ping-interval=5", "python", "src/tetris.py"]
+CMD ["ttyd", "-p", "10000", "-W", "python", "src/tetris.py"]
