@@ -121,7 +121,7 @@ def read_text_input(window: curses.window, y: int, x: int, current_val: str, max
     return val
 
 def run_menu(stdscr: curses.window, arguments) -> dict:
-    """Run the main start menu. Returns a dictionary of configured settings or None to exit."""
+    """Run the main start menu. Returns a dictionary of configured settings."""
     settings = {
         "speed": arguments.speed if arguments.speed else "medium",
         "width": arguments.width if arguments.width else COLS,
@@ -137,19 +137,15 @@ def run_menu(stdscr: curses.window, arguments) -> dict:
 
     main_options = [
         "Start Game (Default Options)",
-        "Advanced Options",
-        "Exit"
+        "Advanced Options"
     ]
 
-    adv_keys = ["speed", "width", "height", "no_color", "seed", "piece", "log", "start", "back"]
+    adv_keys = ["speed", "width", "height", "no_color", "start", "back"]
     adv_labels = [
         "Speed",
         "Width",
         "Height",
         "Disable Colors",
-        "Seed",
-        "Pieces Path",
-        "Log File",
         "Start Game",
         "Back"
     ]
@@ -161,7 +157,7 @@ def run_menu(stdscr: curses.window, arguments) -> dict:
         h, w = stdscr.getmaxyx()
         
         menu_min_w = 54
-        menu_min_h = 16
+        menu_min_h = 13
         if w < menu_min_w or h < menu_min_h:
             stdscr.addstr(h // 2, max(0, (w - 22) // 2), "Screen is too small!")
             stdscr.addstr(h // 2 + 1, max(0, (w - 38) // 2), f"Please resize to at least {menu_min_w}x{menu_min_h}")
@@ -170,7 +166,7 @@ def run_menu(stdscr: curses.window, arguments) -> dict:
             continue
 
         box_w = 52
-        box_h = 14 if current_menu == "main" else 15
+        box_h = 11 if current_menu == "main" else 12
         start_y = (h - box_h) // 2
         start_x = (w - box_w) // 2
 
@@ -226,8 +222,6 @@ def run_menu(stdscr: curses.window, arguments) -> dict:
                         val_str = "None"
                     elif key == "no_color":
                         val_str = "Disabled" if val else "Enabled"
-                    elif key in ["piece", "log"]:
-                        val_str = os.path.basename(val) if val else "default"
                     else:
                         val_str = str(val)
                     
@@ -255,8 +249,6 @@ def run_menu(stdscr: curses.window, arguments) -> dict:
                 elif selected_idx == 1:
                     current_menu = "advanced"
                     selected_idx = 0
-                elif selected_idx == 2:
-                    return None
         
         elif current_menu == "advanced":
             h_curr, w_curr = stdscr.getmaxyx()
@@ -293,35 +285,6 @@ def run_menu(stdscr: curses.window, arguments) -> dict:
                 elif current_key == "no_color":
                     if key in [curses.KEY_LEFT, curses.KEY_RIGHT, 10, 13]:
                         settings["no_color"] = not settings["no_color"]
-                
-                elif current_key in ["seed", "piece", "log"]:
-                    if key in [10, 13]:
-                        y_pos = start_y + 2 + selected_idx
-                        x_pos = start_x + 4 + 2 + 18 + 2
-                        
-                        curr_val = settings[current_key]
-                        curr_str = str(curr_val) if curr_val is not None else ""
-                        
-                        new_val_str = read_text_input(stdscr, y_pos, x_pos, curr_str, 20)
-                        
-                        if current_key == "seed":
-                            if new_val_str == "" or new_val_str.lower() == "none":
-                                settings["seed"] = None
-                            else:
-                                try:
-                                    settings["seed"] = int(new_val_str)
-                                except ValueError:
-                                    pass
-                        elif current_key == "piece":
-                            if new_val_str == "" or new_val_str.lower() == "default":
-                                settings["piece"] = DEFAULT_PIECES_FOLDER
-                            else:
-                                settings["piece"] = new_val_str
-                        elif current_key == "log":
-                            if new_val_str == "" or new_val_str.lower() == "default":
-                                settings["log"] = None
-                            else:
-                                settings["log"] = new_val_str
                 
                 elif current_key == "start":
                     if key in [10, 13]:
