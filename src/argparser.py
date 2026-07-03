@@ -35,5 +35,8 @@ def parse_arguments():
     parser.add_argument("--width", "-w", type=check_width , help="Width of the game grid")
     parser.add_argument("--height", "-l", type=check_height , help="Height of the game grid")
     parser.add_argument("--no-color", action='store_true', help="Disable colors in the game")
+    parser.add_argument("--no-shadow", action='store_true', help="Disable the landing shadow preview")
+    parser.add_argument("--auto", nargs='?', const='PierreDellacherie', default=None, help="Activate AI player mode")
+    parser.add_argument("--ghost", action='store_true', help="Enable phasing ghost pieces")
 
     return parser.parse_args()

@@ -11,6 +11,7 @@ class ColoredPiece:
     """A class to represent a piece with a color."""
     color_value: int
     piece: list
+    is_ghost: bool = False
 
 def read_pieces(pieces_folder: str, no_color: bool) -> list:
     """Read the pieces from the given folder, assign a color to each, 
@@ -38,5 +39,6 @@ def str_piece(piece):
 
 def clone_piece(colored_piece: ColoredPiece) -> ColoredPiece:
     """Return a deep clone of the given ColoredPiece."""
-    return ColoredPiece(colored_piece.color_value, [row[:] for row in colored_piece.piece])
+    return ColoredPiece(colored_piece.color_value, [row[:] for row in colored_piece.piece], colored_piece.is_ghost)
+
 

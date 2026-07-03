@@ -10,55 +10,131 @@ from pieces import read_pieces, clone_piece
 from gui import GameWindow
 from grid import Grid
 from utils import generate_seed
+from ai import get_best_move
 from constants import COLS, ROWS, MARGIN, DEFAULT_PIECES_FOLDER, DEFAULT_LOG_DIR, DEFAULT_LOG_FIL, COLORS, \
     MIN_WIDTH, MAX_WIDTH, MIN_HEIGHT, MAX_HEIGHT, HORIZONTAL_BORDER, VERTICAL_BORDER, T_L_CORNER, T_R_CORNER, \
     B_L_CORNER, B_R_CORNER
 
 logger = logging.getLogger(__name__)
 
-def game_loop(window: curses.window,
-              pieces_folder: str,
-              speed: str,
-              width: int,
-              height: int,
-              no_color: bool = False
-              ):
-    """The main game loop that runs until the game is over."""
+def compute_shadow(grid: Grid, piece, pos: tuple) -> tuple:
+    """Find the landing row of the active piece for shadow rendering."""
+    r, c = pos
+    was_on_grid = hasattr(piece, 'overwritten_blocks') and bool(piece.overwritten_blocks)
+    
+    if was_on_grid:
+        grid.remove_piece(piece, pos)
+        
+    shadow_r = r
+    p_h = len(piece.piece)
+    while shadow_r + p_h < grid.height:
+        if grid.check_collision(piece.piece, (shadow_r + 1, c)):
+            break
+        shadow_r += 1
+        
+    if was_on_grid:
+        grid.put_piece(piece, pos)
+        
+    return (shadow_r, c)
+
+def make_piece(colored_pieces: list, ghost_enabled: bool):
+    """Generate a cloned piece with a chance of being a ghost piece."""
+    piece = clone_piece(random.choice(colored_pieces))
+    piece.rot_count = 0
+    if ghost_enabled and random.random() < 0.15:
+        piece.is_ghost = True
+        piece.color_value = COLORS.get("magenta", 5) # Magenta color for ghost pieces
+    return piece
+
+def game_loop(sub_win: curses.window, pieces_folder: str, speed_level_str: str, width: int, height: int,
+              no_color: bool, mode: str, shadow: bool, ghost: bool):
+    """Main game loop handling the gameplay state."""
     colored_pieces = read_pieces(pieces_folder, no_color)
+    if not colored_pieces:
+        logger.error("No pieces loaded. Exiting game loop.")
+        return
+
     grid = Grid(height, width)
-    gui = GameWindow(window, 14, speed)
-    current_colored_piece = clone_piece(random.choice(colored_pieces))
-    logger.info("Generated piece %s", current_colored_piece)
+    gui = GameWindow(sub_win, 14, speed_level_str)
+    
+    current_colored_piece = make_piece(colored_pieces, ghost)
+    next_colored_piece = make_piece(colored_pieces, ghost)
+    
+    gui.update_window(grid.matrix, next_colored_piece, current_piece=current_colored_piece)
 
     while True:
         position = list((0, width // 2 - 1))
-        next_colored_piece = clone_piece(random.choice(colored_pieces))
-        logger.info("Generated next piece %s", next_colored_piece)
-        can_move_piece = grid.can_move(current_colored_piece, tuple(position), 'd')
+        
+        # Ghost pieces bypass initial spawn collision checks if spawned inside existing blocks
+        can_move_piece = True
+        if not getattr(current_colored_piece, 'is_ghost', False):
+            can_move_piece = grid.can_move(current_colored_piece, tuple(position), 'd')
 
         if not can_move_piece:
             logger.info("No more moves available, game over")
             break
 
-        while can_move_piece:
-            grid.put_piece(current_colored_piece, tuple(position))
-            gui.update_window(grid.matrix, next_colored_piece)
+        grid.put_piece(current_colored_piece, tuple(position))
+        gui.clear_piece(next_colored_piece, (10, height // 2))
 
-            current_colored_piece = gui.handle_key_events(position, current_colored_piece, next_colored_piece, grid)
+        while can_move_piece:
+            # Calculate shadow position
+            shadow_pos = compute_shadow(grid, current_colored_piece, tuple(position)) if shadow else None
+            
+            # Draw AI target for debugging if needed
+            ai_t_rot, ai_t_col = 0, 0
+            if mode == "AI":
+                ai_t_rot, ai_t_col = get_best_move(grid, current_colored_piece)
+
+            # Handle player/AI inputs
+            current_colored_piece = gui.handle_key_events(
+                position, current_colored_piece, next_colored_piece, grid, shadow_pos,
+                ai_mode=(mode == "AI"), target_rot=ai_t_rot, target_col=ai_t_col
+            )
+            
+            if current_colored_piece == "MENU":
+                return "MENU"
+                
+            if current_colored_piece == "SOLIDIFY":
+                # User performed a Hard Drop (regular) or Mid-air Solidify (ghost)
+                break
+            
             can_move_piece = grid.can_move(current_colored_piece, tuple(position), 'd')
             if can_move_piece:
-                grid.remove_piece(current_colored_piece.piece, tuple(position))
+                grid.remove_piece(current_colored_piece, tuple(position))
                 position[0] += 1
 
+        # Solidify piece into matrix
+        grid.finalize_piece(current_colored_piece, tuple(position))
+        
+        # Clear completed lines
         grid.matrix, cleared_lines = grid.clear_filled_lines()
 
         if cleared_lines > 0:
             can_move_piece = False
-            gui.score += cleared_lines
+            
+            # Scoring: multiplier bonuses for multiple lines cleared at once
+            base_scores = {1: 100, 2: 300, 3: 600, 4: 1000}
+            lines_score = base_scores.get(cleared_lines, cleared_lines * 100)
+            
+            # Combo bonus system (consecutive clears)
+            combo_bonus = 50 * gui.combo_count
+            gui.combo_count += 1
+            
+            gui.score += lines_score + combo_bonus
             gui.cleared_lines += cleared_lines
-            gui.speed += 1
-            logger.info("Score updated to %s", gui.score)
-            gui.update_window(grid.matrix, next_colored_piece)
+            
+            # Dynamic speed levels: +1 level for every 5 lines cleared
+            gui.speed_level = 1 + gui.cleared_lines // 5
+            
+            logger.info("Score updated to %s, combo %s, level %s", gui.score, gui.combo_count, gui.speed_level)
+            
+            # Draw updated preview
+            shadow_pos_next = compute_shadow(grid, next_colored_piece, (0, width // 2 - 1)) if shadow else None
+            gui.update_window(grid.matrix, next_colored_piece, shadow_pos_next, next_colored_piece)
+        else:
+            # Reached ground without clearing lines: reset combo multiplier
+            gui.combo_count = 0
 
         gui.clear_piece(next_colored_piece, (10, height // 2))
         current_colored_piece = next_colored_piece
@@ -129,7 +205,10 @@ def run_menu(stdscr: curses.window, arguments) -> dict:
         "no_color": arguments.no_color,
         "seed": arguments.seed,
         "piece": arguments.piece if arguments.piece else DEFAULT_PIECES_FOLDER,
-        "log": arguments.log
+        "log": arguments.log,
+        "mode": "AI" if arguments.auto is not None else "Player",
+        "shadow": False if arguments.no_shadow else True,
+        "ghost": True if arguments.ghost else False
     }
 
     current_menu = "main"
@@ -140,12 +219,15 @@ def run_menu(stdscr: curses.window, arguments) -> dict:
         "Advanced Options"
     ]
 
-    adv_keys = ["speed", "width", "height", "no_color", "start", "back"]
+    adv_keys = ["speed", "width", "height", "no_color", "mode", "shadow", "ghost", "start", "back"]
     adv_labels = [
         "Speed",
         "Width",
         "Height",
         "Disable Colors",
+        "Play Mode",
+        "Shadow Preview",
+        "Ghost Pieces",
         "Start Game",
         "Back"
     ]
@@ -166,7 +248,7 @@ def run_menu(stdscr: curses.window, arguments) -> dict:
             continue
 
         box_w = 52
-        box_h = 11 if current_menu == "main" else 12
+        box_h = 11 if current_menu == "main" else 13
         start_y = (h - box_h) // 2
         start_x = (w - box_w) // 2
 
@@ -199,7 +281,7 @@ def run_menu(stdscr: curses.window, arguments) -> dict:
         elif current_menu == "advanced":
             h_curr, w_curr = stdscr.getmaxyx()
             max_width_val = w_curr // 2 - 2 - 14
-            max_height_val = h_curr - 2
+            max_height_val = h_curr - 8 # Account for top/bottom panel margins
             
             if settings["width"] > max_width_val:
                 settings["width"] = max(MIN_WIDTH, max_width_val)
@@ -222,6 +304,10 @@ def run_menu(stdscr: curses.window, arguments) -> dict:
                         val_str = "None"
                     elif key == "no_color":
                         val_str = "Disabled" if val else "Enabled"
+                    elif key in ["shadow", "ghost"]:
+                        val_str = "Enabled" if val else "Disabled"
+                    elif key == "mode":
+                        val_str = val
                     else:
                         val_str = str(val)
                     
@@ -253,7 +339,7 @@ def run_menu(stdscr: curses.window, arguments) -> dict:
         elif current_menu == "advanced":
             h_curr, w_curr = stdscr.getmaxyx()
             max_width_val = w_curr // 2 - 2 - 14
-            max_height_val = h_curr - 2
+            max_height_val = h_curr - 8
 
             if key == curses.KEY_UP:
                 selected_idx = (selected_idx - 1) % len(adv_keys)
@@ -285,6 +371,18 @@ def run_menu(stdscr: curses.window, arguments) -> dict:
                 elif current_key == "no_color":
                     if key in [curses.KEY_LEFT, curses.KEY_RIGHT, 10, 13]:
                         settings["no_color"] = not settings["no_color"]
+                
+                elif current_key == "mode":
+                    if key in [curses.KEY_LEFT, curses.KEY_RIGHT, 10, 13]:
+                        settings["mode"] = "AI" if settings["mode"] == "Player" else "Player"
+                        
+                elif current_key == "shadow":
+                    if key in [curses.KEY_LEFT, curses.KEY_RIGHT, 10, 13]:
+                        settings["shadow"] = not settings["shadow"]
+                        
+                elif current_key == "ghost":
+                    if key in [curses.KEY_LEFT, curses.KEY_RIGHT, 10, 13]:
+                        settings["ghost"] = not settings["ghost"]
                 
                 elif current_key == "start":
                     if key in [10, 13]:
@@ -337,7 +435,7 @@ def main(stdscr: curses.window, arguments):
             w = settings["width"]
             h = settings["height"]
             min_width = w * 2 + 35
-            min_height = h + 2
+            min_height = h + 8 # Offset for top headers (2) and bottom footer (4) and border offsets (2)
             
             screen_height, screen_width = stdscr.getmaxyx()
             if screen_width < min_width or screen_height < min_height:
@@ -362,8 +460,12 @@ def main(stdscr: curses.window, arguments):
             stdscr.clear()
             stdscr.refresh()
             
-            game_loop(sub_win, settings["piece"], settings["speed"], w, h, settings["no_color"])
+            result = game_loop(sub_win, settings["piece"], settings["speed"], w, h, settings["no_color"],
+                      mode=settings["mode"], shadow=settings["shadow"], ghost=settings["ghost"])
             
+            if result == "MENU":
+                continue
+                
             show_game_over(stdscr)
             
     except Exception as e:
