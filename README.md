@@ -1,7 +1,10 @@
-# Tetris Game
 
+
+
+
+# Tetris Game
 <p align="center">
-  <video src="doc/termtris.mp4" width="400" autoplay loop muted playsinline></video>
+  <img width="406" height="400" alt="termtris" src="https://github.com/user-attachments/assets/57091f40-8500-41e9-a64e-280186282543" />
 </p>
 
 Welcome to **Termtris**! This is a modern take on the classic Tetris game, played right in your terminal, with several new features and quality-of-life improvements.
