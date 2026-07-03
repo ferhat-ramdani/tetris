@@ -13,6 +13,32 @@ jobs:
         with:
           fetch-depth: 0
           lfs: true
+      
+      - name: Inject Hugging Face YAML Metadata into README
+        run: |
+          # Create the required HF configuration header
+          cat << 'EOF' > hf_header.txt
+          ---
+          title: Tetris
+          emoji: 🕹️
+          colorFrom: blue
+          colorTo: purple
+          sdk: docker
+          app_port: 7860
+          pinned: false
+          ---
+
+          EOF
+          
+          # Combine the HF header with your existing GitHub README content
+          cat hf_header.txt README.md > temp_readme.md
+          mv temp_readme.md README.md
+          rm hf_header.txt
+
+          # Configure a temporary git identity to commit the modified README locally
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git commit -am "Inject Hugging Face configuration metadata"
 
       - name: Push to Hugging Face
         env:
