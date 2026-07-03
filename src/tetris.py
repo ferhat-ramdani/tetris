@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 class MenuController:
     def __init__(self, stdscr, arguments):
         self.stdscr = stdscr
-        self.settings = {
+        self.default_settings = {
             "speed": arguments.speed if arguments.speed else "medium",
             "width": arguments.width if arguments.width else COLS,
             "height": arguments.height if arguments.height else ROWS,
@@ -33,6 +33,7 @@ class MenuController:
             "shadow": False if arguments.no_shadow else True,
             "ghost": True if arguments.ghost else False
         }
+        self.settings = self.default_settings.copy()
         self.current_menu = "main"
         self.selected_idx = 0
         
@@ -107,7 +108,7 @@ class MenuController:
             self.selected_idx = (self.selected_idx + 1) % len(self.main_options)
         elif key in [10, 13]:
             if self.selected_idx == 0:
-                return "START"
+                return "START_DEFAULT"
             self.current_menu = "advanced"
             self.selected_idx = 0
         return None
@@ -192,7 +193,9 @@ class MenuController:
                 self.render_advanced_menu(start_y, start_x, box_w, box_h, max_w_val, max_h_val)
                 action = self.handle_advanced_input(self.stdscr.getch(), max_w_val, max_h_val)
 
-            if action == "START":
+            if action == "START_DEFAULT":
+                return self.default_settings
+            elif action == "START":
                 return self.settings
 
 
