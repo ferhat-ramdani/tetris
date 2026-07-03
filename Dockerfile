@@ -15,4 +15,4 @@ EXPOSE 7860
 
 ENV TERM=xterm-256color
 
-CMD ["ttyd", "-p", "7860", "-W", "-t", "enableZmodem=false", "-t", "disableLeaveAlert=true", "bash", "-c", "while true; do python src/tetris.py; echo 'Game closed. Press Enter to play again...'; read; done"]
+CMD ["ttyd", "-p", "7860", "-W", "-p", "7860", "-i", "0.0.0.0", "-o", "ping-interval=5", "python", "src/tetris.py"]

@@ -12,8 +12,11 @@ DEFAULT_LOG_DIR = os.path.join(CURRENT_PATH, '../log/')
 DEFAULT_LOG_FIL = os.path.join(CURRENT_PATH, '../log/game.log')
 
 # Get terminal dimensions
-TERMIANL_SIZE = os.get_terminal_size()
-TERMIANL_WIDTH, TERMIANL_HEIGHT= TERMIANL_SIZE.columns, TERMIANL_SIZE.lines
+try:
+    TERMIANL_SIZE = os.get_terminal_size()
+    TERMIANL_WIDTH, TERMIANL_HEIGHT = TERMIANL_SIZE.columns, TERMIANL_SIZE.lines
+except OSError:
+    TERMIANL_WIDTH, TERMIANL_HEIGHT = 80, 24
 
 MIN_WIDTH = 5
 MAX_WIDTH = TERMIANL_WIDTH//2 - 2 - MARGIN

@@ -6,11 +6,13 @@ import logging
 import os
 
 from argparser import parse_arguments
-from pieces import read_pieces
+from pieces import read_pieces, clone_piece
 from gui import GameWindow
 from grid import Grid
 from utils import generate_seed
-from constants import COLS, ROWS, MARGIN, DEFAULT_PIECES_FOLDER, DEFAULT_LOG_DIR, DEFAULT_LOG_FIL, COLORS
+from constants import COLS, ROWS, MARGIN, DEFAULT_PIECES_FOLDER, DEFAULT_LOG_DIR, DEFAULT_LOG_FIL, COLORS, \
+    MIN_WIDTH, MAX_WIDTH, MIN_HEIGHT, MAX_HEIGHT, HORIZONTAL_BORDER, VERTICAL_BORDER, T_L_CORNER, T_R_CORNER, \
+    B_L_CORNER, B_R_CORNER
 
 logger = logging.getLogger(__name__)
 
@@ -24,13 +26,13 @@ def game_loop(window: curses.window,
     """The main game loop that runs until the game is over."""
     colored_pieces = read_pieces(pieces_folder, no_color)
     grid = Grid(height, width)
-    gui = GameWindow(window, MARGIN, speed)
-    current_colored_piece = random.choice(colored_pieces)
+    gui = GameWindow(window, 14, speed)
+    current_colored_piece = clone_piece(random.choice(colored_pieces))
     logger.info("Generated piece %s", current_colored_piece)
 
     while True:
         position = list((0, width // 2 - 1))
-        next_colored_piece = random.choice(colored_pieces)
+        next_colored_piece = clone_piece(random.choice(colored_pieces))
         logger.info("Generated next piece %s", next_colored_piece)
         can_move_piece = grid.can_move(current_colored_piece, tuple(position), 'd')
 
@@ -58,9 +60,8 @@ def game_loop(window: curses.window,
             logger.info("Score updated to %s", gui.score)
             gui.update_window(grid.matrix, next_colored_piece)
 
-        gui.clear_piece(next_colored_piece, (10, ROWS // 2)) # what does that do?
+        gui.clear_piece(next_colored_piece, (10, height // 2))
         current_colored_piece = next_colored_piece
-    game_loop(window, pieces_folder, speed, width, height, no_color)
 
 def setup_curses(stdscr: curses.window):
     """Setup the curses environment."""
@@ -82,37 +83,326 @@ def teardown_curses(stdscr: curses.window):
     curses.nocbreak()
     stdscr.keypad(False)
 
-
-def initialize_game():
-    """Initialize the game with the arguments provided by the user."""
-    arguments = parse_arguments()
+def configure_game(settings: dict):
+    """Configure logging and seed based on the active settings."""
     if not os.path.exists(DEFAULT_LOG_DIR):
         os.makedirs(DEFAULT_LOG_DIR)
-    if arguments.log:
-        log = os.path.join(DEFAULT_LOG_DIR, arguments.log)
-        logging.basicConfig(filename=log,
-                            level=logging.INFO,
-                            filemode='w')
+    
+    # Configure logging
+    log_file = settings["log"]
+    if log_file:
+        if not os.path.isabs(log_file):
+            log_path = os.path.join(DEFAULT_LOG_DIR, log_file)
+        else:
+            log_path = log_file
     else:
-        logging.basicConfig(filename=DEFAULT_LOG_FIL, level=logging.INFO, filemode='w')
-    logger.info("Starting the game")
+        log_path = DEFAULT_LOG_FIL
+        
+    for handler in logging.root.handlers[:]:
+        logging.root.removeHandler(handler)
+        
+    logging.basicConfig(filename=log_path, level=logging.INFO, filemode='w')
+    
+    # Seed
     seed = generate_seed()
-    random.seed(arguments.seed if arguments.seed else seed)
+    random.seed(settings["seed"] if settings["seed"] is not None else seed)
     logger.info("Seed set by %s",
-                f"user is {arguments.seed}" if arguments.seed else f"system is {seed}")
-    width = arguments.width if arguments.width else COLS
-    height = arguments.height if arguments.height else ROWS
-    logger.info("Game width: %d, game height: %d", width, height)
+                f"user is {settings['seed']}" if settings["seed"] is not None else f"system is {seed}")
 
-    return arguments, width, height
+def read_text_input(window: curses.window, y: int, x: int, current_val: str, max_len: int = 20) -> str:
+    """Read a string input from the user in curses."""
+    curses.curs_set(1)
+    curses.echo()
+    window.addstr(y, x, " " * (max_len + 4))
+    window.move(y, x)
+    val = window.getstr(y, x, max_len).decode('utf-8').strip()
+    curses.curs_set(0)
+    curses.noecho()
+    return val
 
-def main(stdscr: curses.window, arguments, width: int, height: int):
+def run_menu(stdscr: curses.window, arguments) -> dict:
+    """Run the main start menu. Returns a dictionary of configured settings or None to exit."""
+    settings = {
+        "speed": arguments.speed if arguments.speed else "medium",
+        "width": arguments.width if arguments.width else COLS,
+        "height": arguments.height if arguments.height else ROWS,
+        "no_color": arguments.no_color,
+        "seed": arguments.seed,
+        "piece": arguments.piece if arguments.piece else DEFAULT_PIECES_FOLDER,
+        "log": arguments.log
+    }
+
+    current_menu = "main"
+    selected_idx = 0
+
+    main_options = [
+        "Start Game (Default Options)",
+        "Advanced Options",
+        "Exit"
+    ]
+
+    adv_keys = ["speed", "width", "height", "no_color", "seed", "piece", "log", "start", "back"]
+    adv_labels = [
+        "Speed",
+        "Width",
+        "Height",
+        "Disable Colors",
+        "Seed",
+        "Pieces Path",
+        "Log File",
+        "Start Game",
+        "Back"
+    ]
+
+    stdscr.nodelay(False)
+    
+    while True:
+        stdscr.clear()
+        h, w = stdscr.getmaxyx()
+        
+        menu_min_w = 54
+        menu_min_h = 16
+        if w < menu_min_w or h < menu_min_h:
+            stdscr.addstr(h // 2, max(0, (w - 22) // 2), "Screen is too small!")
+            stdscr.addstr(h // 2 + 1, max(0, (w - 38) // 2), f"Please resize to at least {menu_min_w}x{menu_min_h}")
+            stdscr.refresh()
+            stdscr.getch()
+            continue
+
+        box_w = 52
+        box_h = 14 if current_menu == "main" else 15
+        start_y = (h - box_h) // 2
+        start_x = (w - box_w) // 2
+
+        for x_coord in range(start_x, start_x + box_w):
+            stdscr.addch(start_y, x_coord, HORIZONTAL_BORDER)
+            stdscr.addch(start_y + box_h - 1, x_coord, HORIZONTAL_BORDER)
+        for y_coord in range(start_y, start_y + box_h):
+            stdscr.addch(y_coord, start_x, VERTICAL_BORDER)
+            stdscr.addch(y_coord, start_x + box_w - 1, VERTICAL_BORDER)
+        stdscr.addch(start_y, start_x, T_L_CORNER)
+        stdscr.addch(start_y, start_x + box_w - 1, T_R_CORNER)
+        stdscr.addch(start_y + box_h - 1, start_x, B_L_CORNER)
+        stdscr.addch(start_y + box_h - 1, start_x + box_w - 1, B_R_CORNER)
+
+        title = " TERMTRIS "
+        stdscr.addstr(start_y, start_x + (box_w - len(title)) // 2, title, curses.A_BOLD)
+
+        if current_menu == "main":
+            for idx, opt in enumerate(main_options):
+                y_pos = start_y + 3 + idx * 2
+                x_pos = start_x + 6
+                if idx == selected_idx:
+                    stdscr.addstr(y_pos, x_pos, f"> {opt}", curses.A_REVERSE | curses.A_BOLD)
+                else:
+                    stdscr.addstr(y_pos, x_pos, f"  {opt}")
+            
+            help_str = "Use UP/DOWN to navigate, ENTER to select"
+            stdscr.addstr(start_y + box_h - 2, start_x + (box_w - len(help_str)) // 2, help_str, curses.A_DIM)
+
+        elif current_menu == "advanced":
+            h_curr, w_curr = stdscr.getmaxyx()
+            max_width_val = w_curr // 2 - 2 - 14
+            max_height_val = h_curr - 2
+            
+            if settings["width"] > max_width_val:
+                settings["width"] = max(MIN_WIDTH, max_width_val)
+            if settings["height"] > max_height_val:
+                settings["height"] = max(MIN_HEIGHT, max_height_val)
+
+            for idx, key in enumerate(adv_keys):
+                y_pos = start_y + 2 + idx
+                x_pos = start_x + 4
+                
+                style = curses.A_REVERSE | curses.A_BOLD if idx == selected_idx else curses.A_NORMAL
+                
+                if key in ["start", "back"]:
+                    label = f"[ {adv_labels[idx]} ]"
+                    stdscr.addstr(y_pos, start_x + (box_w - len(label)) // 2, label, style)
+                else:
+                    label = adv_labels[idx] + ":"
+                    val = settings[key]
+                    if val is None:
+                        val_str = "None"
+                    elif key == "no_color":
+                        val_str = "Disabled" if val else "Enabled"
+                    elif key in ["piece", "log"]:
+                        val_str = os.path.basename(val) if val else "default"
+                    else:
+                        val_str = str(val)
+                    
+                    option_line = f"  {label:<18} [ {val_str} ]"
+                    if idx == selected_idx:
+                        stdscr.addstr(y_pos, x_pos, option_line, style)
+                    else:
+                        stdscr.addstr(y_pos, x_pos, option_line)
+
+            help_str = "LEFT/RIGHT to adjust, ENTER to edit/select"
+            stdscr.addstr(start_y + box_h - 2, start_x + (box_w - len(help_str)) // 2, help_str, curses.A_DIM)
+
+        stdscr.refresh()
+
+        key = stdscr.getch()
+        
+        if current_menu == "main":
+            if key == curses.KEY_UP:
+                selected_idx = (selected_idx - 1) % len(main_options)
+            elif key == curses.KEY_DOWN:
+                selected_idx = (selected_idx + 1) % len(main_options)
+            elif key in [10, 13]:
+                if selected_idx == 0:
+                    return settings
+                elif selected_idx == 1:
+                    current_menu = "advanced"
+                    selected_idx = 0
+                elif selected_idx == 2:
+                    return None
+        
+        elif current_menu == "advanced":
+            h_curr, w_curr = stdscr.getmaxyx()
+            max_width_val = w_curr // 2 - 2 - 14
+            max_height_val = h_curr - 2
+
+            if key == curses.KEY_UP:
+                selected_idx = (selected_idx - 1) % len(adv_keys)
+            elif key == curses.KEY_DOWN:
+                selected_idx = (selected_idx + 1) % len(adv_keys)
+            
+            else:
+                current_key = adv_keys[selected_idx]
+                if current_key == "speed":
+                    speeds_list = ["slow", "medium", "fast"]
+                    curr_speed_idx = speeds_list.index(settings["speed"])
+                    if key == curses.KEY_LEFT:
+                        settings["speed"] = speeds_list[(curr_speed_idx - 1) % 3]
+                    elif key == curses.KEY_RIGHT:
+                        settings["speed"] = speeds_list[(curr_speed_idx + 1) % 3]
+                
+                elif current_key == "width":
+                    if key == curses.KEY_LEFT:
+                        settings["width"] = max(MIN_WIDTH, settings["width"] - 1)
+                    elif key == curses.KEY_RIGHT:
+                        settings["width"] = min(max_width_val, settings["width"] + 1)
+                
+                elif current_key == "height":
+                    if key == curses.KEY_LEFT:
+                        settings["height"] = max(MIN_HEIGHT, settings["height"] - 1)
+                    elif key == curses.KEY_RIGHT:
+                        settings["height"] = min(max_height_val, settings["height"] + 1)
+                
+                elif current_key == "no_color":
+                    if key in [curses.KEY_LEFT, curses.KEY_RIGHT, 10, 13]:
+                        settings["no_color"] = not settings["no_color"]
+                
+                elif current_key in ["seed", "piece", "log"]:
+                    if key in [10, 13]:
+                        y_pos = start_y + 2 + selected_idx
+                        x_pos = start_x + 4 + 2 + 18 + 2
+                        
+                        curr_val = settings[current_key]
+                        curr_str = str(curr_val) if curr_val is not None else ""
+                        
+                        new_val_str = read_text_input(stdscr, y_pos, x_pos, curr_str, 20)
+                        
+                        if current_key == "seed":
+                            if new_val_str == "" or new_val_str.lower() == "none":
+                                settings["seed"] = None
+                            else:
+                                try:
+                                    settings["seed"] = int(new_val_str)
+                                except ValueError:
+                                    pass
+                        elif current_key == "piece":
+                            if new_val_str == "" or new_val_str.lower() == "default":
+                                settings["piece"] = DEFAULT_PIECES_FOLDER
+                            else:
+                                settings["piece"] = new_val_str
+                        elif current_key == "log":
+                            if new_val_str == "" or new_val_str.lower() == "default":
+                                settings["log"] = None
+                            else:
+                                settings["log"] = new_val_str
+                
+                elif current_key == "start":
+                    if key in [10, 13]:
+                        return settings
+                
+                elif current_key == "back":
+                    if key in [10, 13]:
+                        current_menu = "main"
+                        selected_idx = 1
+
+def show_game_over(stdscr: curses.window):
+    """Show the game over message and wait for a keypress."""
+    stdscr.nodelay(False)
+    h, w = stdscr.getmaxyx()
+    box_w, box_h = 30, 7
+    start_y = (h - box_h) // 2
+    start_x = (w - box_w) // 2
+    
+    for x in range(start_x, start_x + box_w):
+        stdscr.addch(start_y, x, HORIZONTAL_BORDER)
+        stdscr.addch(start_y + box_h - 1, x, HORIZONTAL_BORDER)
+    for y in range(start_y, start_y + box_h):
+        stdscr.addch(y, start_x, VERTICAL_BORDER)
+        stdscr.addch(y, start_x + box_w - 1, VERTICAL_BORDER)
+    stdscr.addch(start_y, start_x, T_L_CORNER)
+    stdscr.addch(start_y, start_x + box_w - 1, T_R_CORNER)
+    stdscr.addch(start_y + box_h - 1, start_x, B_L_CORNER)
+    stdscr.addch(start_y + box_h - 1, start_x + box_w - 1, B_R_CORNER)
+    
+    msg = "GAME OVER"
+    msg2 = "Press any key to return"
+    msg3 = "to the main menu..."
+    stdscr.addstr(start_y + 1, start_x + (box_w - len(msg)) // 2, msg, curses.A_BOLD)
+    stdscr.addstr(start_y + 3, start_x + (box_w - len(msg2)) // 2, msg2)
+    stdscr.addstr(start_y + 4, start_x + (box_w - len(msg3)) // 2, msg3)
+    stdscr.refresh()
+    stdscr.getch()
+
+def main(stdscr: curses.window, arguments):
     """The main function that initializes the game."""
     try:
         setup_curses(stdscr)
-        pieces_folder = arguments.piece if arguments.piece \
-            else DEFAULT_PIECES_FOLDER
-        game_loop(stdscr, pieces_folder, arguments.speed, width, height, arguments.no_color)
+        while True:
+            settings = run_menu(stdscr, arguments)
+            if settings is None:
+                break
+            
+            configure_game(settings)
+            
+            w = settings["width"]
+            h = settings["height"]
+            min_width = w * 2 + 35
+            min_height = h + 2
+            
+            screen_height, screen_width = stdscr.getmaxyx()
+            if screen_width < min_width or screen_height < min_height:
+                stdscr.clear()
+                msg = "Screen is too small for this configuration!"
+                msg2 = f"Required: {min_width}x{min_height}, Available: {screen_width}x{screen_height}"
+                msg3 = "Press any key to return to menu..."
+                stdscr.addstr(screen_height // 2 - 1, max(0, (screen_width - len(msg)) // 2), msg, curses.A_BOLD)
+                stdscr.addstr(screen_height // 2, max(0, (screen_width - len(msg2)) // 2), msg2)
+                stdscr.addstr(screen_height // 2 + 1, max(0, (screen_width - len(msg3)) // 2), msg3)
+                stdscr.refresh()
+                stdscr.nodelay(False)
+                stdscr.getch()
+                continue
+            
+            start_y = (screen_height - min_height) // 2
+            start_x = (screen_width - min_width) // 2
+            sub_win = stdscr.derwin(min_height, min_width, start_y, start_x)
+            sub_win.keypad(True)
+            sub_win.nodelay(True)
+            
+            stdscr.clear()
+            stdscr.refresh()
+            
+            game_loop(sub_win, settings["piece"], settings["speed"], w, h, settings["no_color"])
+            
+            show_game_over(stdscr)
+            
     except Exception as e:
         logger.error("An error occurred: %s", e)
         raise e
@@ -121,8 +411,9 @@ def main(stdscr: curses.window, arguments, width: int, height: int):
         print("trying here")
 
 try:
-    args, width, height = initialize_game()
-    curses.wrapper(main, args, width, height)
+    args = parse_arguments()
+    curses.wrapper(main, args)
 except KeyboardInterrupt:
     logger.info("Game interrupted by user (Ctrl+C)")
     print("Game interrupted by user (Ctrl+C)")
+
