@@ -23,46 +23,66 @@ class Grid:
         self.matrix = [[Block(COLORS["black"], ' ') for _ in range(width)] for _ in range(height)]
 
     def put_piece(self, colored_piece: ColoredPiece, position: tuple):
-        """Put a piece on the grid at the given position."""
+        """Put a piece on the grid at the given position, backing up overwritten cells."""
         x, y = position
         piece_height = len(colored_piece.piece)
         piece_width = len(colored_piece.piece[0])
 
+        if not hasattr(colored_piece, 'overwritten_blocks'):
+            colored_piece.overwritten_blocks = {}
+
+        is_ghost_piece = getattr(colored_piece, 'is_ghost', False)
         for i in range(piece_height):
             for j in range(piece_width):
                 if colored_piece.piece[i][j] == 'x':
-                    self.matrix[x + i][y + j] = Block(colored_piece.color_value,
-                                                      colored_piece.piece[i][j])
+                    grid_r = x + i
+                    grid_c = y + j
+                    # Save the overwritten block
+                    colored_piece.overwritten_blocks[(grid_r, grid_c)] = self.matrix[grid_r][grid_c]
+                    # Put active block character ('g' for ghost, 'x' for normal)
+                    char_type = 'g' if is_ghost_piece else 'x'
+                    self.matrix[grid_r][grid_c] = Block(colored_piece.color_value, char_type)
 
-    def remove_piece(self, piece: list, position: tuple):
-        """Remove a piece from the grid at the given position."""
+    def remove_piece(self, colored_piece, position: tuple):
+        """Remove a piece from the grid, restoring original cell contents."""
         x, y = position
-        piece_height = len(piece)
-        piece_width = len(piece[0])
-
-        for i in range(piece_height):
-            for j in range(piece_width):
-                if piece[i][j] == 'x':
-                    self.matrix[x + i][y + j] = Block(COLORS["black"], ' ')
-
+        if hasattr(colored_piece, 'overwritten_blocks') and colored_piece.overwritten_blocks:
+            for (grid_r, grid_c), original_block in colored_piece.overwritten_blocks.items():
+                self.matrix[grid_r][grid_c] = original_block
+            colored_piece.overwritten_blocks.clear()
+        else:
+            # Fallback to older list-based remove logic if it's not a ColoredPiece object
+            piece_list = colored_piece.piece if hasattr(colored_piece, 'piece') else colored_piece
+            piece_height = len(piece_list)
+            piece_width = len(piece_list[0])
+            for i in range(piece_height):
+                for j in range(piece_width):
+                    if piece_list[i][j] == 'x':
+                        self.matrix[x + i][y + j] = Block(COLORS["black"], ' ')
 
     def check_collision(self, piece: list, position: tuple):
-        """Check if a piece collides with the grid at the given position."""
+        """Check if a piece collides with any occupied grid cells at the given position."""
         x, y = position
         piece_height = len(piece)
         piece_width = len(piece[0])
 
         for i in range(piece_height):
             for j in range(piece_width):
-                if piece[i][j] == 'x' and self.matrix[x + i][y + j].char == 'x':
+                if piece[i][j] == 'x' and self.matrix[x + i][y + j].char != ' ':
                     return True
         return False
 
     def can_move(self, colored_piece: ColoredPiece, position: tuple, direction: str):
         """Check if a piece can move in the given direction."""
         x, y = position
-        self.remove_piece(colored_piece.piece, position)
-        new_piece = ColoredPiece(colored_piece.color_value, [row[:] for row in colored_piece.piece])
+        
+        # Check if piece is actually on the grid right now
+        was_on_grid = hasattr(colored_piece, 'overwritten_blocks') and bool(colored_piece.overwritten_blocks)
+        
+        if was_on_grid:
+            self.remove_piece(colored_piece, position)
+            
+        new_piece = ColoredPiece(colored_piece.color_value, [row[:] for row in colored_piece.piece], getattr(colored_piece, 'is_ghost', False))
         if direction == 'l':
             new_position = (x, y - 1)
         elif direction == 'r':
@@ -81,17 +101,37 @@ class Grid:
         piece_width = len(new_piece.piece[0])
         grid_height = len(self.matrix)
         grid_width = len(self.matrix[0])
+        
+        # Check boundary collision
         if (new_x < 0 or new_x + piece_height - 1 >= grid_height or new_y < 0 or
             new_y + piece_width - 1 >= grid_width):
-            self.put_piece(colored_piece, position)
+            if was_on_grid:
+                self.put_piece(colored_piece, position)
             return False
 
-        collision = self.check_collision(new_piece.piece, new_position)
-        if not collision:
-            self.put_piece(new_piece, position)
-        else:
+        # Ghost pieces bypass grid block collision
+        is_ghost_piece = getattr(colored_piece, 'is_ghost', False)
+        collision = False if is_ghost_piece else self.check_collision(new_piece.piece, new_position)
+        
+        if was_on_grid:
             self.put_piece(colored_piece, position)
         return not collision
+
+    def finalize_piece(self, colored_piece: ColoredPiece, position: tuple):
+        """Solidify the piece into the grid, resolving overwritten blocks for ghost pieces."""
+        is_ghost_piece = getattr(colored_piece, 'is_ghost', False)
+        if is_ghost_piece and hasattr(colored_piece, 'overwritten_blocks'):
+            for (grid_r, grid_c), original_block in colored_piece.overwritten_blocks.items():
+                if original_block.char != ' ':
+                    self.matrix[grid_r][grid_c] = original_block
+                else:
+                    self.matrix[grid_r][grid_c].char = 'x'
+            colored_piece.overwritten_blocks.clear()
+        elif hasattr(colored_piece, 'overwritten_blocks'):
+            for (grid_r, grid_c) in list(colored_piece.overwritten_blocks.keys()):
+                self.matrix[grid_r][grid_c].char = 'x'
+            colored_piece.overwritten_blocks.clear()
+
 
     def clear_filled_lines(self):
         """Clear filled lines from the grid."""
