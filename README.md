@@ -6,6 +6,10 @@
 - Use the `space` key to rotate the pieces.
 - Use the `⬇️` key to accelerate the fall of the pieces.
 
+## Try it !
+
+you can try it here (only works on laptop) : https://tetris-s5wj.onrender.com
+
 ## Options
 
 - Use `--log <file>` to specify a file where logs will be written. Logs are stored inside the folder `log`. When the user does not specify the log file, a default log file with the name `game.log` will be created and used.
