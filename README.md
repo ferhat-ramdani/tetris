@@ -1,6 +1,8 @@
-
-
-
+<p align="center">
+  <a href="https://sonarcloud.io/summary/new_code?id=ferhat-ramdani_tetris">
+    <img src="https://sonarcloud.io/api/project_badges/measure?project=ferhat-ramdani_tetris&metric=alert_status" alt="Quality Gate Status" />
+  </a>
+</p>
 
 # Tetris Game
 <p align="center">
@@ -8,6 +10,10 @@
 </p>
 
 Welcome to **Termtris**! This is a modern take on the classic Tetris game, played right in your terminal, with several new features and quality-of-life improvements.
+
+## Try it !
+
+You can try it here (only works on laptop) : https://tetris-s5wj.onrender.com
 
 ## What's New (Features)
 Unlike the classic Tetris game, this version comes packed with some exciting modern features:
@@ -22,14 +28,10 @@ Unlike the classic Tetris game, this version comes packed with some exciting mod
 The controls have been updated to support the new mechanics:
 
 * `⬅️` / `➡️` : Move the piece left or right.
-* `SPACE` : Rotate the piece.
 * `⬇️` : Soft Drop (accelerates the fall of the piece).
 * `⬆️` : Hard Drop (instantly drops the piece to the shadow position). If Ghost Pieces are enabled, it instantly solidifies them in place!
+* `SPACE` : Rotate the piece.
 * `M` / `Q` / `ESC` : Return to the main menu.
-
-## Try it !
-
-You can try it here (only works on laptop) : https://tetris-s5wj.onrender.com
 
 ## Options & Settings
 
