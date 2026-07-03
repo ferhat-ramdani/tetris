@@ -43,7 +43,7 @@ def make_piece(colored_pieces: list, ghost_enabled: bool):
     piece.rot_count = 0
     if ghost_enabled and random.random() < 0.15:
         piece.is_ghost = True
-        piece.color_value = COLORS.get("magenta", 5) # Magenta color for ghost pieces
+        piece.color_value = COLORS.get("cyan", 3) # Glowing Cyan color for ghosts for ghost pieces
     return piece
 
 def game_loop(sub_win: curses.window, pieces_folder: str, speed_level_str: str, width: int, height: int,
