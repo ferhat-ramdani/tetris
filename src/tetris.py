@@ -74,12 +74,17 @@ def game_loop(sub_win: curses.window, pieces_folder: str, speed_level_str: str, 
             logger.info("No more moves available, game over")
             break
 
-        grid.put_piece(current_colored_piece, tuple(position))
         gui.clear_piece(next_colored_piece, (10, height // 2))
 
         while can_move_piece:
+            # Place piece in grid before drawing and input handling
+            grid.put_piece(current_colored_piece, tuple(position))
+            
             # Calculate shadow position
             shadow_pos = compute_shadow(grid, current_colored_piece, tuple(position)) if shadow else None
+            
+            # Render game state
+            gui.update_window(grid.matrix, next_colored_piece, shadow_pos, current_colored_piece)
             
             # Draw AI target for debugging if needed
             ai_t_rot, ai_t_col = 0, 0
@@ -87,17 +92,19 @@ def game_loop(sub_win: curses.window, pieces_folder: str, speed_level_str: str, 
                 ai_t_rot, ai_t_col = get_best_move(grid, current_colored_piece)
 
             # Handle player/AI inputs
-            current_colored_piece = gui.handle_key_events(
+            ret_action = gui.handle_key_events(
                 position, current_colored_piece, next_colored_piece, grid, shadow_pos,
                 ai_mode=(mode == "AI"), target_rot=ai_t_rot, target_col=ai_t_col
             )
             
-            if current_colored_piece == "MENU":
+            if ret_action == "MENU":
                 return "MENU"
                 
-            if current_colored_piece == "SOLIDIFY":
+            if ret_action == "SOLIDIFY":
                 # User performed a Hard Drop (regular) or Mid-air Solidify (ghost)
                 break
+                
+            current_colored_piece = ret_action
             
             can_move_piece = grid.can_move(current_colored_piece, tuple(position), 'd')
             if can_move_piece:
@@ -136,8 +143,8 @@ def game_loop(sub_win: curses.window, pieces_folder: str, speed_level_str: str, 
             # Reached ground without clearing lines: reset combo multiplier
             gui.combo_count = 0
 
-        gui.clear_piece(next_colored_piece, (10, height // 2))
         current_colored_piece = next_colored_piece
+        next_colored_piece = make_piece(colored_pieces, ghost)
 
 def setup_curses(stdscr: curses.window):
     """Setup the curses environment."""
