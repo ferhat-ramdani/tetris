@@ -1,0 +1,2 @@
+--extra-index-url https://pypi.org/simple
+windows-curses; sys_platform == 'win32'
