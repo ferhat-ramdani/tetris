@@ -253,7 +253,8 @@ def game_loop(sub_win, pieces_folder, speed_level_str, width, height, no_color, 
 
         while can_move_piece:
             grid.put_piece(current_colored_piece, tuple(position))
-            shadow_pos = compute_shadow(grid, current_colored_piece, tuple(position)) if shadow else None
+            show_shadow = shadow and not getattr(current_colored_piece, 'is_ghost', False)
+            shadow_pos = compute_shadow(grid, current_colored_piece, tuple(position)) if show_shadow else None
             gui.update_window(grid.matrix, next_colored_piece, shadow_pos, current_colored_piece)
             
             ret_action = gui.handle_key_events(
@@ -284,7 +285,8 @@ def game_loop(sub_win, pieces_folder, speed_level_str, width, height, no_color, 
             gui.cleared_lines += cleared_lines
             gui.speed_level = 1 + gui.cleared_lines // 5
             
-            shadow_pos_next = compute_shadow(grid, next_colored_piece, (0, width // 2 - 1)) if shadow else None
+            show_shadow_next = shadow and not getattr(next_colored_piece, 'is_ghost', False)
+            shadow_pos_next = compute_shadow(grid, next_colored_piece, (0, width // 2 - 1)) if show_shadow_next else None
             gui.update_window(grid.matrix, next_colored_piece, shadow_pos_next, next_colored_piece)
         else:
             gui.combo_count = 0
