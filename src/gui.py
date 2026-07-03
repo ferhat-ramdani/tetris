@@ -24,14 +24,19 @@ class GameWindow:
 
     def draw_piece(self, colored_piece: ColoredPiece, start_pos: tuple):
         """Draw a piece on the game window."""
-        char_to_draw = '▒' if getattr(colored_piece, 'is_ghost', False) else PIECE_CHAR
+        is_ghost = getattr(colored_piece, 'is_ghost', False)
+        char_to_draw = '▓' if is_ghost else PIECE_CHAR
+        color_pair = curses.color_pair(colored_piece.color_value)
+        if is_ghost:
+            color_pair |= curses.A_BOLD
+            
         for y, row in enumerate(colored_piece.piece):
             for x, char in enumerate(row):
                 if char == 'x':
                     self.window.addch(start_pos[1] + y, start_pos[0] + x * 2,
-                                      char_to_draw, curses.color_pair(colored_piece.color_value))
+                                      char_to_draw, color_pair)
                     self.window.addch(start_pos[1] + y, start_pos[0] + x * 2 + 1,
-                                      char_to_draw, curses.color_pair(colored_piece.color_value))
+                                      char_to_draw, color_pair)
 
     def clear_piece(self, colored_piece: ColoredPiece, pos: tuple):
         """Clear a piece from the game window."""
@@ -49,7 +54,8 @@ class GameWindow:
                 if block.char == ' ':
                     character = ' '
                 elif block.char == 'g':
-                    character = '▒'
+                    character = '▓'
+                    color_pair |= curses.A_BOLD
                 else:
                     character = PIECE_CHAR
                 self.window.addch(y + 3, x * 2 + self.margin + 1, character, color_pair)
