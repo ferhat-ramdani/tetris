@@ -35,3 +35,8 @@ def rotate_piece(piece):
 def str_piece(piece):
     """Convert the given piece to a string."""
     return '\n'.join([''.join(row) for row in piece])
+
+def clone_piece(colored_piece: ColoredPiece) -> ColoredPiece:
+    """Return a deep clone of the given ColoredPiece."""
+    return ColoredPiece(colored_piece.color_value, [row[:] for row in colored_piece.piece])
+
