@@ -10,27 +10,22 @@ def get_best_move(grid, colored_piece: ColoredPiece) -> tuple:
     best_rotations_count = 0
     best_col = 0
     
-    # Try all rotations (0 to 3)
     temp_piece = ColoredPiece(colored_piece.color_value, [row[:] for row in colored_piece.piece])
     
     for rot in range(4):
         piece_width = len(temp_piece.piece[0])
         
-        # Try all columns where the piece fits
-        for col_idx in range(grid.width - piece_width + 1):
-            # Simulate drop
+        for col_idx in range(-piece_width, grid.width + piece_width):
             landing_row = get_landing_row(grid, temp_piece.piece, col_idx)
             if landing_row is None:
                 continue
                 
-            # Evaluate board state after dropping
             score = evaluate_placement(grid, temp_piece.piece, landing_row, col_idx)
             if score > best_score:
                 best_score = score
                 best_rotations_count = rot
                 best_col = col_idx
                 
-        # Rotate piece for next iteration
         temp_piece.piece = rotate_piece(temp_piece.piece)
         
     return best_rotations_count, best_col
@@ -40,11 +35,20 @@ def get_landing_row(grid, piece: list, col_idx: int) -> int:
     piece_height = len(piece)
     piece_width = len(piece[0])
     
-    # Check bounds
-    if col_idx < 0 or col_idx + piece_width > grid.width:
+    min_c = piece_width
+    max_c = -1
+    for r in range(piece_height):
+        for c in range(piece_width):
+            if piece[r][c] != ' ':
+                min_c = min(min_c, c)
+                max_c = max(max_c, c)
+                
+    if max_c < min_c:
         return None
         
-    # Drop down row by row
+    if col_idx + min_c < 0 or col_idx + max_c >= grid.width:
+        return None
+        
     landing_row = None
     for r in range(grid.height - piece_height + 1):
         if grid.check_collision(piece, (r, col_idx)):
@@ -57,21 +61,17 @@ def evaluate_placement(grid, piece: list, row: int, col_idx: int) -> float:
     piece_height = len(piece)
     piece_width = len(piece[0])
     
-    # Create simple binary representation of grid matrix
-    matrix_copy = [[self_block.char != ' ' for self_block in grid_row] for grid_row in grid.matrix]
+    matrix_copy = [[getattr(cell, 'char', cell) != ' ' for cell in grid_row] for grid_row in grid.matrix]
     
-    # Place piece
     piece_blocks_placed = []
     for i in range(piece_height):
         for j in range(piece_width):
-            if piece[i][j] == 'x':
+            if piece[i][j] != ' ':
                 matrix_copy[row + i][col_idx + j] = True
                 piece_blocks_placed.append((row + i, col_idx + j))
                 
-    # 1. Landing Height (Measured from bottom-up to center of piece)
     landing_height = grid.height - (row + piece_height / 2.0)
     
-    # 2. Eroded Piece Cells
     lines_cleared = 0
     blocks_eliminated = 0
     remaining_matrix = []
@@ -84,32 +84,26 @@ def evaluate_placement(grid, piece: list, row: int, col_idx: int) -> float:
             
     eroded_piece_cells = lines_cleared * blocks_eliminated
     
-    # Reconstruct matrix after clearing lines
     matrix_after = [[False] * grid.width for _ in range(lines_cleared)] + remaining_matrix
     
-    # 3. Row Transitions
     row_transitions = 0
     for r in range(grid.height):
-        if not matrix_after[r][0]:  # Left wall
+        if not matrix_after[r][0]:
             row_transitions += 1
         for c in range(grid.width - 1):
             if matrix_after[r][c] != matrix_after[r][c + 1]:
                 row_transitions += 1
-        if not matrix_after[r][-1]: # Right wall
+        if not matrix_after[r][-1]:
             row_transitions += 1
             
-    # 4. Column Transitions
     col_transitions = 0
     for c in range(grid.width):
-        if matrix_after[0][c]: # Top (empty space -> block)
-            col_transitions += 1
         for r in range(grid.height - 1):
             if matrix_after[r][c] != matrix_after[r + 1][c]:
                 col_transitions += 1
-        if not matrix_after[-1][c]: # Bottom floor
+        if not matrix_after[-1][c]:
             col_transitions += 1
             
-    # 5. Holes
     holes = 0
     for c in range(grid.width):
         block_found = False
@@ -119,7 +113,6 @@ def evaluate_placement(grid, piece: list, row: int, col_idx: int) -> float:
             elif block_found and not matrix_after[r][c]:
                 holes += 1
                 
-    # 6. Well Sums
     well_sums = 0
     for c in range(grid.width):
         depth = 0
@@ -135,7 +128,6 @@ def evaluate_placement(grid, piece: list, row: int, col_idx: int) -> float:
             else:
                 depth = 0
     
-    # El-Tetris (Dellacherie) GA-tuned Heuristic Weights
     w_height = -4.500158
     w_eroded = 3.418126
     w_row_trans = -3.217888
