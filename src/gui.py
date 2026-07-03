@@ -6,7 +6,8 @@ import time
 from grid import Grid
 from pieces import rotate_piece
 from constants import PIECE_CHAR, SPEEDS, BASE_WAIT_TIME, DECREMENT_FACTOR, \
-    COLORS, HORIZONTAL_BORDER, VERTICAL_BORDER, T_L_CORNER, T_R_CORNER, B_L_CORNER, B_R_CORNER
+    COLORS, HORIZONTAL_BORDER, VERTICAL_BORDER, T_L_CORNER, T_R_CORNER, B_L_CORNER, B_R_CORNER, \
+    GHOST_CHAR_1, GHOST_CHAR_2
 from pieces import ColoredPiece
 
 logger = logging.getLogger(__name__)
@@ -25,7 +26,6 @@ class GameWindow:
     def draw_piece(self, colored_piece: ColoredPiece, start_pos: tuple):
         """Draw a piece on the game window."""
         is_ghost = getattr(colored_piece, 'is_ghost', False)
-        char_to_draw = '▓' if is_ghost else PIECE_CHAR
         color_pair = curses.color_pair(colored_piece.color_value)
         if is_ghost:
             color_pair |= curses.A_BOLD
@@ -33,10 +33,12 @@ class GameWindow:
         for y, row in enumerate(colored_piece.piece):
             for x, char in enumerate(row):
                 if char == 'x':
+                    c1 = GHOST_CHAR_1 if is_ghost else PIECE_CHAR
+                    c2 = GHOST_CHAR_2 if is_ghost else PIECE_CHAR
                     self.window.addch(start_pos[1] + y, start_pos[0] + x * 2,
-                                      char_to_draw, color_pair)
+                                      c1, color_pair)
                     self.window.addch(start_pos[1] + y, start_pos[0] + x * 2 + 1,
-                                      char_to_draw, color_pair)
+                                      c2, color_pair)
 
     def clear_piece(self, colored_piece: ColoredPiece, pos: tuple):
         """Clear a piece from the game window."""
@@ -52,14 +54,14 @@ class GameWindow:
             for x, block in enumerate(row):
                 color_pair = curses.color_pair(block.color)
                 if block.char == ' ':
-                    character = ' '
+                    c1, c2 = ' ', ' '
                 elif block.char == 'g':
-                    character = '▓'
+                    c1, c2 = GHOST_CHAR_1, GHOST_CHAR_2
                     color_pair |= curses.A_BOLD
                 else:
-                    character = PIECE_CHAR
-                self.window.addch(y + 3, x * 2 + self.margin + 1, character, color_pair)
-                self.window.addch(y + 3, x * 2 + self.margin + 2, character, color_pair)
+                    c1, c2 = PIECE_CHAR, PIECE_CHAR
+                self.window.addch(y + 3, x * 2 + self.margin + 1, c1, color_pair)
+                self.window.addch(y + 3, x * 2 + self.margin + 2, c2, color_pair)
     
     def draw_borders(self, cols: int, rows: int, color):
         """Draw the borders of the game window, offset by 2 rows for the top panel."""
