@@ -6,30 +6,28 @@
 
 # Tetris Game
 <p align="center">
-  <img width="406" height="400" alt="termtris" src="https://github.com/user-attachments/assets/57091f40-8500-41e9-a64e-280186282543" />
+  <img width="406" height="400" alt="tetris" src="https://github.com/user-attachments/assets/57091f40-8500-41e9-a64e-280186282543" />
 </p>
 
-Welcome to **Termtris**! This is a modern take on the classic Tetris game, played right in your terminal, with several new features and quality-of-life improvements.
+Welcome to **Tetris**! This is a modern take on the classic Tetris game, played right in your terminal, with several new features and quality-of-life improvements.
 
 ## Try it !
 
 You can try it here (only works on laptop) : https://tetris-s5wj.onrender.com
 
-## What's New (Features)
+## Features
 Unlike the classic Tetris game, this version comes packed with some exciting modern features:
 
 * **AI Auto-Play**: Watch the computer play for you! An integrated AI solver can take control and calculate the best moves step-by-step.
-* **Colors**: Pieces are beautifully colored by default for better visibility and a modern feel (can be disabled in options).
+* **Colors**: Pieces are colored by default for better visibility (can be disabled in options).
 * **Shadow Preview**: A helpful shadow outline appears at the bottom of the grid, showing exactly where your current piece will land.
 * **Ghost Pieces**: A special mode where you can instantly solidify ghost pieces in place. 
 
-## How to Play (Controls)
+## Controls
 
-The controls have been updated to support the new mechanics:
-
-* `⬅️` / `➡️` : Move the piece left or right.
-* `⬇️` : Soft Drop (accelerates the fall of the piece).
-* `⬆️` : Hard Drop (instantly drops the piece to the shadow position). If Ghost Pieces are enabled, it instantly solidifies them in place!
+* `←` / `→` : Move the piece left or right.
+* `↓` : Soft Drop (accelerates the fall of the piece).
+* `↑` : Hard Drop (instantly drops the piece to the shadow position). If Ghost Pieces are enabled, it instantly solidifies them in place!
 * `SPACE` : Rotate the piece.
 * `M` / `Q` / `ESC` : Return to the main menu.
 
@@ -47,7 +45,7 @@ When you launch the game, you'll be greeted with an interactive menu. You can cu
 
 ## How the AI Works
 
-The AI Auto-Play feature uses a powerful heuristic approach known as the **Pierre Dellacherie Algorithm**. Instead of looking many steps ahead, it evaluates the immediate best move for the current piece.
+The AI Auto-Play feature uses a heuristic approach known as the **Pierre Dellacherie Algorithm**. Instead of looking many steps ahead, it evaluates the immediate best move for the current piece.
 
 ### Evaluation Process
 
@@ -68,7 +66,7 @@ The AI simply picks the placement with the highest resulting score and executes 
 Simply double-click the `launch.bat` file in the project folder. This will automatically handle setting up the virtual environment, installing dependencies, and launching the game.
 
 ### On Linux/Mac
-1. Make the script executable (only needed once): `chmod +x launch.sh`
+1. Make the script executable: `chmod +x launch.sh`
 2. Run the script: `./launch.sh`
 
 This script will automatically handle setting up the virtual environment, installing dependencies, and launching the game.
