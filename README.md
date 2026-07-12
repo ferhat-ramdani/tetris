@@ -1,12 +1,12 @@
-# Python_2024_2025_Ramdani_Arbouche
+# Tetris Game
 
-# How to play ?
+## How to play ?
 
 - Use `⬅️` and `➡️` keys to move the pieces left and right.
 - Use the `space` key to rotate the pieces.
 - Use the `⬇️` key to accelerate the fall of the pieces.
 
-# Options
+## Options
 
 - Use `--log <file>` to specify a file where logs will be written. Logs are stored inside the folder `log`. When the user does not specify the log file, a default log file with the name `game.log` will be created and used.
 - Use `--seed <seed>`to specify a seed for the random number generator.
@@ -16,9 +16,13 @@
 - Use `--height <height>` or `-h <height>` to specify the height of the game.
 - Use `--no-color` to disable colored pieces. By default, the pieces are colored.
 
-# Launch the game
+## Launch the game
 
-- Go to `src` folder
-- Use `python3 tetris.py` to launch the game with default options.
+### On Windows
+Simply double-click the `launch.bat` file in the project folder. This will automatically handle setting up the virtual environment, installing dependencies, and launching the game.
 
-> **Note:** This game is, for now, not supported in windows, since it uses the `curses` python library.
+### On Linux/Mac
+1. Make the script executable (only needed once): `chmod +x launch.sh`
+2. Run the script: `./launch.sh`
+
+This script will automatically handle setting up the virtual environment, installing dependencies, and launching the game.

@@ -11,3 +11,5 @@ generated_pieces/
 new_pieces/
 
 log/
+
+.venv/

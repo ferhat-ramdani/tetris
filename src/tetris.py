@@ -14,7 +14,8 @@ from constants import COLS, ROWS, MARGIN, DEFAULT_PIECES_FOLDER, DEFAULT_LOG_DIR
 
 logger = logging.getLogger(__name__)
 
-def game_loop(pieces_folder: str,
+def game_loop(window: curses.window,
+              pieces_folder: str,
               speed: str,
               width: int,
               height: int,
@@ -59,7 +60,7 @@ def game_loop(pieces_folder: str,
 
         gui.clear_piece(next_colored_piece, (10, ROWS // 2)) # what does that do?
         current_colored_piece = next_colored_piece
-    game_loop(pieces_folder, speed, width, height, no_color)
+    game_loop(window, pieces_folder, speed, width, height, no_color)
 
 def setup_curses(stdscr: curses.window):
     """Setup the curses environment."""
@@ -111,7 +112,7 @@ def main(stdscr: curses.window, arguments, width: int, height: int):
         setup_curses(stdscr)
         pieces_folder = arguments.piece if arguments.piece \
             else DEFAULT_PIECES_FOLDER
-        game_loop(pieces_folder, arguments.speed, width, height, arguments.no_color)
+        game_loop(stdscr, pieces_folder, arguments.speed, width, height, arguments.no_color)
     except Exception as e:
         logger.error("An error occurred: %s", e)
         raise e
@@ -121,7 +122,6 @@ def main(stdscr: curses.window, arguments, width: int, height: int):
 
 try:
     args, width, height = initialize_game()
-    window: curses.window = curses.initscr()
     curses.wrapper(main, args, width, height)
 except KeyboardInterrupt:
     logger.info("Game interrupted by user (Ctrl+C)")
