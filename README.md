@@ -1,15 +1,9 @@
-<p align="center">
-  <a href="https://sonarcloud.io/summary/new_code?id=ferhat-ramdani_tetris">
-    <img src="https://sonarcloud.io/api/project_badges/measure?project=ferhat-ramdani_tetris&metric=alert_status" alt="Quality Gate Status" />
-  </a>
-</p>
-
 # Tetris Game
 <p align="center">
   <img width="406" height="400" alt="tetris" src="https://github.com/user-attachments/assets/57091f40-8500-41e9-a64e-280186282543" />
 </p>
 
-Welcome to **Tetris**! This is a modern take on the classic Tetris game, played right in your terminal, with several new features and quality-of-life improvements.
+A Tetris clone that runs entirely in your terminal (curses), with a twist: you don't have to play it yourself. Flip on AI Auto-Play and watch a heuristic solver clear lines on its own, one simulated placement at a time.
 
 ## Try it !
 
@@ -45,11 +39,7 @@ When you launch the game, you'll be greeted with an interactive menu. You can cu
 
 ## How the AI Works
 
-The AI Auto-Play feature uses a heuristic approach known as the **Pierre Dellacherie Algorithm**. Instead of looking many steps ahead, it evaluates the immediate best move for the current piece.
-
-### Evaluation Process
-
-For every new piece, the AI simulates dropping it in every possible rotation and across every column. It then scores the resulting board state based on six key metrics (where `+` is rewarded and `-` is penalized):
+The AI Auto-Play feature uses a heuristic approach known as the **Pierre Dellacherie Algorithm**. Instead of looking many steps ahead, it evaluates the immediate best move for the current piece: for every new piece, it simulates dropping it in every possible rotation and across every column, then scores the resulting board state on six metrics (`+` rewarded, `-` penalized):
 
 1. **Landing Height** (`-`) : Prefers keeping the stack as low as possible.
 2. **Eroded Pieces** (`+`) : Rewards clearing lines, especially when the current piece contributes to it.
@@ -58,7 +48,7 @@ For every new piece, the AI simulates dropping it in every possible rotation and
 5. **Holes** (`-`) : Heavily penalizes creating empty spaces trapped beneath blocks.
 6. **Wells** (`-`) : Penalizes creating deep, narrow empty columns.
 
-The AI simply picks the placement with the highest resulting score and executes the moves step-by-step.
+It simply picks the placement with the highest resulting score and executes the moves step-by-step — no lookahead, no search tree, and it still plays convincingly well.
 
 ## Launch the game
 
